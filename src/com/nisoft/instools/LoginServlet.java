@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 import com.nisoft.instools.jdbc.JDBCUtil;
 //@WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
@@ -36,6 +37,7 @@ public class LoginServlet extends HttpServlet {
 		PrintWriter out = resp.getWriter();
 		String userName = req.getParameter("username");
 		String password = req.getParameter("password");
+		String companyCode = req.getParameter("org_code");
 		String type = req.getParameter("intent");
 		System.out.println(userName + "  " + password);
 		ResultSet result = null;
@@ -68,7 +70,7 @@ public class LoginServlet extends HttpServlet {
 				if (type.equals("login")) {
 					out.write("登陆失败：用户不存在！");
 				} else {
-					String insertSql = "insert into user (phone,psaaword)values('" + userName + "','" + password + "')";
+					String insertSql = "insert into user (phone,psaaword,companyId)values('" + userName + "','" + password + "','"+companyCode+"')";
 					int i = st.executeUpdate(insertSql);
 					System.out.println("增加了 "+i+" 名新用户！");
 					if(i==1){
