@@ -6,14 +6,18 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
+import com.google.gson.Gson;
+import com.nisoft.instools.jdbc.Company;
 import com.nisoft.instools.jdbc.JDBCUtil;
+import com.nisoft.instools.jdbc.RegisterDataPackage;
+import com.nisoft.instools.utils.StringsUtil;
 //@WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 	/**
@@ -26,8 +30,55 @@ public class LoginServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		System.out.println("doget");
+		//query all companies which had already registered
+		resp.setCharacterEncoding("UTF-8");
+		resp.setContentType("text/html");
+		PrintWriter out = resp.getWriter();
+		String sql = "select *from company";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		ResultSet result = null;
+		try {
+			st = conn.createStatement();
+			result = st.executeQuery(sql);
+			result.last();
+			int row = result.getRow();
+			System.out.println(row + "");
+			result.beforeFirst();
+			ArrayList<Company> allCompanies = new ArrayList<>();
+			while(result.next()){
+				Company company = new Company();
+				company.setOrgCode(result.getString("companyId"));
+				company.setOrgName(result.getString("company_name"));
+				company.setOrgStructure(StringsUtil.stringToList(result.getString("structure")));
+				allCompanies.add(company);
+			}
+			RegisterDataPackage datapackage = new RegisterDataPackage();
+			datapackage.setCompanies(allCompanies);
+			Gson gson = new Gson();
+			out.write(gson.toJson(datapackage));	
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				result.close();
+			} catch (Exception e2) {
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			out.close();
+		}
 	}
+	
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,11 +91,11 @@ public class LoginServlet extends HttpServlet {
 		String companyCode = req.getParameter("org_code");
 		String type = req.getParameter("intent");
 		System.out.println(userName + "  " + password);
-		ResultSet result = null;
 		String sql = "select *from user where phone = '" + userName + "'";
-
+		
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
+		ResultSet result = null;
 		try {
 			st = conn.createStatement();
 			result = st.executeQuery(sql);
@@ -86,7 +137,6 @@ public class LoginServlet extends HttpServlet {
 			try {
 				result.close();
 			} catch (Exception e2) {
-				// TODO: handle exception
 			}
 			try {
 				st.close();
