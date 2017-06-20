@@ -56,6 +56,7 @@ public class LoginServlet extends HttpServlet {
 				company.setOrgStructure(StringsUtil.getStrings((result.getString("structure"))));
 				allCompanies.add(company);
 			}
+			System.out.println(allCompanies.size());
 			RegisterDataPackage datapackage = new RegisterDataPackage();
 			datapackage.setCompanies(allCompanies);
 			Gson gson = new Gson();
@@ -120,8 +121,8 @@ public class LoginServlet extends HttpServlet {
 					out.write("登陆失败：用户不存在！");
 				}
 				
-			}else if (type.equals("login")) {
-				String insertSql = "insert into user (phone,psaaword,companyId)values('" + userName + "','"
+			}else if (type.equals("register")) {
+				String insertSql = "insert into user (phone,password,companyId)values('" + userName + "','"
 						+ password + "','" + companyCode + "')";
 				int i = st.executeUpdate(insertSql);
 				System.out.println("增加了 " + i + " 名新用户！");

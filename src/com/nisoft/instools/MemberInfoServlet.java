@@ -12,11 +12,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.nisoft.instools.jdbc.Employee;
+import com.nisoft.instools.jdbc.EmployeeDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
-import com.nisoft.instools.utils.StringsUtil;
+import com.nisoft.instools.jdbc.OrgInfo;
 
 /**
  * Servlet implementation class MemberInfoServlet
@@ -47,54 +49,40 @@ public class MemberInfoServlet extends HttpServlet {
 		
 		request.setCharacterEncoding("utf-8");
 		response.setCharacterEncoding("utf-8");
-		String phone = request.getParameter("phone");
-		String intent = request.getParameter("intent");
-		Connection conn = JDBCUtil.getConnection();
+		Connection conn = null;
 		Statement st = null;
 		ResultSet rs = null;
+		String phone = request.getParameter("phone");
+		String parent_id = request.getParameter("company_id");
+		String intent = request.getParameter("intent");
 		PrintWriter out = response.getWriter();
+		
 		try {
-			
-//			if(intent.equals("update")&&row==1){
-//				rs.first();
-//				int id = rs.getInt("id");
-//				String name = request.getParameter("name");
-//				String employee_id = request.getParameter("employee_id");
-//				String org_id = request.getParameter("org_id");
-//				String stations_code = request.getParameter("stations_code");
-//				String updateSql = "update employee set name = '"+name+"','"
-//						+"employee_id = '"+employee_id+"','"
-//						+"org_id = '"+org_id+"','"
-//						+"stations_code = '"+stations_code
-//						+"where id = "+id;
-//				int j = st.executeUpdate(updateSql);
-//				if(j==1){
-//					out.write("更新用户信息成功！");
-//				}else{
-//					out.write("更新用户信息失败！");
-//				}
-//			}else 
-			st = conn.createStatement();
 			if(intent.equals("query")){
-				String sql = "SELECT *FROM employee WHERE phone = '"+phone+"'";
-				rs = st.executeQuery(sql);
-//				rs.last();
-//				int row = rs.getRow();
-				rs.first();
-				String name = request.getParameter("name");
-				String employee_id = request.getParameter("employee_id");
-				String org_id = request.getParameter("org_id");
-				String stations_code = request.getParameter("stations_code");
-				Employee member = new Employee();
-				member.setPhone(phone);
-				member.setName(name);
-				member.setWorkNum(employee_id);
-				member.setOrgId(org_id);
-				member.setPositionsId(StringsUtil.getStrings(stations_code));
+				EmployeeDataPackage dataPackage = new EmployeeDataPackage();
+				Employee employee = new Employee();
+				ArrayList<OrgInfo> detailedOrgs = new ArrayList<>();
+				ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(parent_id);
+				ArrayList<ArrayList<OrgInfo>> orgsInfoForchoose = new ArrayList<>();
+				ResultSet result = JDBCUtil.query("employee", "phone", phone);
+				if(JDBCUtil.queryResult(result).size()==1){
+					employee = JDBCUtil.queryResult(result).get(0);
+					detailedOrgs = JDBCUtil.queryDetailedOrg(employee.getOrgId());
+					for(int i = 0;i<detailedOrgs.size();i++){
+						orgsInfoForchoose.add(JDBCUtil.queryChildOrgs(detailedOrgs.get(i).getParentOrgId()));
+					}
+				}else{
+					orgsInfoForchoose.add(childOrgs);
+				}
+				dataPackage.setEmployee(employee);
+				dataPackage.setOrgInfo(detailedOrgs);
+				dataPackage.setOrgsInfoForSelect(orgsInfoForchoose);
 				Gson gson = new Gson();
-				String json = gson.toJson(member);
-				out.write(json);	
+				String json = gson.toJson(dataPackage);
+				out.write(json);		
 			}else if(intent.equals("update")){
+				conn = JDBCUtil.getConnection();
+				st = conn.createStatement();
 				String json = request.getParameter("employee");
 				Gson gson = new Gson();
 				Employee employee = gson.fromJson(json, Employee.class);
@@ -107,7 +95,6 @@ public class MemberInfoServlet extends HttpServlet {
 						+phone+"','" +name+"','"+employee_id+"','"+org_id+"','"+stations_code
 						+"') on duplicate key update name = values(name),employee_id=value(employee_id),"
 						+"org_id = value(org_id),stations_code = values(stations_code)";
-				
 				int i = st.executeUpdate(insertSql);
 				if(i==1){
 					out.write("用户信息提交成功！");
@@ -118,6 +105,7 @@ public class MemberInfoServlet extends HttpServlet {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			out.write("false");
 		}finally{
 			try {
 				if(rs!=null){
@@ -140,6 +128,5 @@ public class MemberInfoServlet extends HttpServlet {
 			out.close();
 		}
 		
-	}
-	
+	}	
 }

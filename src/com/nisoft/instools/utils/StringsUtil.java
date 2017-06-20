@@ -13,9 +13,11 @@ public class StringsUtil {
 			String[] ss = s.split(",");
 			for (String s1 : ss) {
 				s1 = s1.trim();
+				System.out.println(s1);
 				strings.add(s1);
 			}
 		}
+		System.out.println("structure"+strings.size());
 		return strings;
 	}
 
