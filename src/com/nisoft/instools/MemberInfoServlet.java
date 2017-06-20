@@ -23,55 +23,57 @@ import com.nisoft.instools.jdbc.OrgInfo;
 /**
  * Servlet implementation class MemberInfoServlet
  */
-//@WebServlet("/MemberInfoServlet")
+// @WebServlet("/MemberInfoServlet")
 public class MemberInfoServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public MemberInfoServlet() {
-        super();
-    }
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#HttpServlet()
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+	public MemberInfoServlet() {
+		super();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
 		response.getWriter().append("Served at: ").append(request.getContextPath());
 	}
 
 	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
 		request.setCharacterEncoding("utf-8");
 		response.setCharacterEncoding("utf-8");
-		Connection conn = null;
-		Statement st = null;
-		ResultSet rs = null;
 		String phone = request.getParameter("phone");
 		String parent_id = request.getParameter("company_id");
 		String intent = request.getParameter("intent");
 		PrintWriter out = response.getWriter();
-		
-		try {
-			if(intent.equals("query")){
+		if (intent.equals("query")) {
+			try {
 				EmployeeDataPackage dataPackage = new EmployeeDataPackage();
 				Employee employee = new Employee();
 				ArrayList<OrgInfo> detailedOrgs = new ArrayList<>();
 				ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(parent_id);
 				ArrayList<ArrayList<OrgInfo>> orgsInfoForchoose = new ArrayList<>();
 				ResultSet result = JDBCUtil.query("employee", "phone", phone);
-				if(JDBCUtil.queryResult(result).size()==1){
-					employee = JDBCUtil.queryResult(result).get(0);
+				ArrayList<Employee> employees = JDBCUtil.queryEmployeeResult(result);
+
+				if (employees.size() == 1) {
+					employee = employees.get(0);
 					detailedOrgs = JDBCUtil.queryDetailedOrg(employee.getOrgId());
-					for(int i = 0;i<detailedOrgs.size();i++){
+					for (int i = 0; i < detailedOrgs.size(); i++) {
 						orgsInfoForchoose.add(JDBCUtil.queryChildOrgs(detailedOrgs.get(i).getParentOrgId()));
 					}
-				}else{
+				} else {
 					orgsInfoForchoose.add(childOrgs);
 				}
 				dataPackage.setEmployee(employee);
@@ -79,8 +81,17 @@ public class MemberInfoServlet extends HttpServlet {
 				dataPackage.setOrgsInfoForSelect(orgsInfoForchoose);
 				Gson gson = new Gson();
 				String json = gson.toJson(dataPackage);
-				out.write(json);		
-			}else if(intent.equals("update")){
+				System.out.println(json);
+				out.write(json);
+			} catch (Exception e) {
+				e.printStackTrace();
+				out.write("false");
+			}
+		} else if (intent.equals("update")) {
+			Connection conn = null;
+			Statement st = null;
+			ResultSet rs = null;
+			try {
 				conn = JDBCUtil.getConnection();
 				st = conn.createStatement();
 				String json = request.getParameter("employee");
@@ -90,43 +101,42 @@ public class MemberInfoServlet extends HttpServlet {
 				String employee_id = employee.getWorkNum();
 				String org_id = employee.getOrgId();
 				String stations_code = employee.getPositionsId().toString();
-				String insertSql = "insert into employee"
-						+ "(phone,name,work_num,org_code,stations_code)values('"
-						+phone+"','" +name+"','"+employee_id+"','"+org_id+"','"+stations_code
-						+"') on duplicate key update name = values(name),employee_id=value(employee_id),"
-						+"org_id = value(org_id),stations_code = values(stations_code)";
+				String insertSql = "insert into employee" + "(phone,name,work_num,org_code,stations_code)values('"
+						+ phone + "','" + name + "','" + employee_id + "','" + org_id + "','" + stations_code
+						+ "') on duplicate key update name = values(name),employee_id=value(employee_id),"
+						+ "org_id = value(org_id),stations_code = values(stations_code)";
 				int i = st.executeUpdate(insertSql);
-				if(i==1){
+				if (i == 1) {
 					out.write("用户信息提交成功！");
-				}else{
+				} else {
 					out.write("用户信息提交失败！");
 				}
-			}
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-			out.write("false");
-		}finally{
-			try {
-				if(rs!=null){
-					rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				out.write("用户信息提交失败！");
+			} finally {
+				try {
+					if (rs != null) {
+						rs.close();
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
+				try {
+					st.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				out.close();
 			}
-			try {
-				st.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			out.close();
+
 		}
-		
-	}	
+
+	}
 }

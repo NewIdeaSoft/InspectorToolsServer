@@ -55,9 +55,10 @@ public class JDBCUtil {
 		return rs;
 	}
 	
-	public static ArrayList<Employee> queryResult(ResultSet rs){
+	public static ArrayList<Employee> queryEmployeeResult(ResultSet rs){
 		ArrayList<Employee> employees = new ArrayList<Employee>();
 		try {
+			
 			rs.beforeFirst();
 			while(rs.next()){
 				Employee member = new Employee();
@@ -73,6 +74,7 @@ public class JDBCUtil {
 				member.setPositionsId(StringsUtil.getStrings(stations_code));
 				employees.add(member);
 			}
+			System.out.println(employees.toString());
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{
@@ -114,6 +116,7 @@ public class JDBCUtil {
 			org = queryOrg(org.getParentOrgId());
 			orgInfos.add(0,org);
 		}
+		System.out.println("detailedOrgsInfo:"+orgInfos.size());
 		return orgInfos;
 	}
 	
@@ -130,7 +133,7 @@ public class JDBCUtil {
 				org.setOrgLevel(rs.getInt("org_level"));
 				childOrgs.add(org);
 			}
-			
+			System.out.println("childOrgs:"+childOrgs.size());
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{
