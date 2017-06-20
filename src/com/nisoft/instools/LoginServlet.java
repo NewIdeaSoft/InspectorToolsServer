@@ -25,6 +25,8 @@ public class LoginServlet extends HttpServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private static int i = 0;
 
 	public LoginServlet() {
 	}
@@ -51,7 +53,7 @@ public class LoginServlet extends HttpServlet {
 				Company company = new Company();
 				company.setOrgCode(result.getString("companyId"));
 				company.setOrgName(result.getString("company_name"));
-				company.setOrgStructure(StringsUtil.stringToList(result.getString("structure")));
+				company.setOrgStructure(StringsUtil.getStrings((result.getString("structure"))));
 				allCompanies.add(company);
 			}
 			RegisterDataPackage datapackage = new RegisterDataPackage();
@@ -82,6 +84,8 @@ public class LoginServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		i++;
+		System.out.println("第"+i+"名用户");
 		resp.setCharacterEncoding("UTF-8");
 		req.setCharacterEncoding("UTF-8");
 		resp.setContentType("text/html");
@@ -109,7 +113,6 @@ public class LoginServlet extends HttpServlet {
 					System.out.println(resultPassword);
 					if (resultPassword.equals(password)) {
 						out.write("true");
-						System.out.println("true");
 					} else {
 						out.write("登陆失败:密码错误！");
 					}
