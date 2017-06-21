@@ -55,10 +55,15 @@ public class JDBCUtil {
 		return rs;
 	}
 	
-	public static ArrayList<Employee> queryEmployeeResult(ResultSet rs){
+	public static ArrayList<Employee> queryEmployeeResult(String column,String value){
+		String sql = "select *from employee where "+column+"='"+value+"'";
+		Statement st = null;
+		ResultSet rs = null;
+		Connection conn = getConnection();
 		ArrayList<Employee> employees = new ArrayList<Employee>();
 		try {
-			
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
 			rs.beforeFirst();
 			while(rs.next()){
 				Employee member = new Employee();
@@ -83,19 +88,34 @@ public class JDBCUtil {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return employees;
 	}
 	
 	public static OrgInfo queryOrg(String org_code){
 		OrgInfo org = new OrgInfo();
-		ResultSet rs = query("org","org_id",org_code);
+		String sql = "select *from org where org_id='"+org_code+"'";
+		Statement st = null;
+		ResultSet rs = null;
+		Connection conn = getConnection();
 		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
 			rs.first();
 			org.setOrgId(rs.getString("org_id"));
-			org.setOrgName(rs.getString("org_name"));
+			org.setOrgName(rs.getString("name"));
 			org.setParentOrgId(rs.getString("parent_id"));
-			org.setOrgLevel(rs.getInt("org_level"));
+			org.setOrgLevel(rs.getInt("level"));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{
@@ -104,11 +124,21 @@ public class JDBCUtil {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return org;
 	}
 	
-	public static ArrayList<OrgInfo> queryDetailedOrg(String org_id){
+	public static ArrayList<OrgInfo> queryDetailedOrg(String org_id,int size){
 		ArrayList<OrgInfo> orgInfos = new ArrayList<>();
 		OrgInfo org = queryOrg(org_id);
 		orgInfos.add(org);
@@ -116,21 +146,29 @@ public class JDBCUtil {
 			org = queryOrg(org.getParentOrgId());
 			orgInfos.add(0,org);
 		}
+		for(int i = orgInfos.size();i<size;i++){
+			orgInfos.add(new OrgInfo());
+		}
 		System.out.println("detailedOrgsInfo:"+orgInfos.size());
 		return orgInfos;
 	}
 	
 	public static ArrayList<OrgInfo> queryChildOrgs(String parent_id){
+		String sql = "select *from org where parent_id='"+parent_id+"'";
+		Statement st = null;
+		ResultSet rs = null;
+		Connection conn = getConnection();
 		ArrayList<OrgInfo> childOrgs = new ArrayList<>();
-		ResultSet rs = query("org","parent_id",parent_id);
 		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
 			rs.beforeFirst();
 			while(rs.next()){
 				OrgInfo org = new OrgInfo();
 				org.setOrgId(rs.getString("org_id"));
-				org.setOrgName(rs.getString("org_name"));
+				org.setOrgName(rs.getString("name"));
 				org.setParentOrgId(rs.getString("parent_id"));
-				org.setOrgLevel(rs.getInt("org_level"));
+				org.setOrgLevel(rs.getInt("level"));
 				childOrgs.add(org);
 			}
 			System.out.println("childOrgs:"+childOrgs.size());
@@ -139,6 +177,16 @@ public class JDBCUtil {
 		}finally{
 			try {
 				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

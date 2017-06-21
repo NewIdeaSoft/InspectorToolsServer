@@ -3,7 +3,7 @@ package com.nisoft.instools.jdbc;
 public class OrgInfo {
 	private String mOrgId;
     private String mOrgName;
-    private int mOrgLevel;
+    private int mOrgLevel = -1;
     private String mParentOrgId;
 
 

@@ -21,6 +21,11 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
 public class UploadServlet extends HttpServlet {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {

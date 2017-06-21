@@ -19,6 +19,7 @@ import com.nisoft.instools.jdbc.Employee;
 import com.nisoft.instools.jdbc.EmployeeDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
 import com.nisoft.instools.jdbc.OrgInfo;
+import com.nisoft.instools.jdbc.OrgListPackage;
 
 /**
  * Servlet implementation class MemberInfoServlet
@@ -53,28 +54,36 @@ public class MemberInfoServlet extends HttpServlet {
 
 		request.setCharacterEncoding("utf-8");
 		response.setCharacterEncoding("utf-8");
-		String phone = request.getParameter("phone");
-		String parent_id = request.getParameter("company_id");
 		String intent = request.getParameter("intent");
 		PrintWriter out = response.getWriter();
+		String phone = request.getParameter("phone");
 		if (intent.equals("query")) {
+			
+			String company_id = request.getParameter("company_id");
+			int structure_levels = Integer.parseInt(request.getParameter("structure_levels"));
 			try {
 				EmployeeDataPackage dataPackage = new EmployeeDataPackage();
 				Employee employee = new Employee();
 				ArrayList<OrgInfo> detailedOrgs = new ArrayList<>();
-				ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(parent_id);
+
+				ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(company_id);
 				ArrayList<ArrayList<OrgInfo>> orgsInfoForchoose = new ArrayList<>();
-				ResultSet result = JDBCUtil.query("employee", "phone", phone);
-				ArrayList<Employee> employees = JDBCUtil.queryEmployeeResult(result);
+				ArrayList<Employee> employees = JDBCUtil.queryEmployeeResult("phone", phone);
 
 				if (employees.size() == 1) {
 					employee = employees.get(0);
-					detailedOrgs = JDBCUtil.queryDetailedOrg(employee.getOrgId());
+					detailedOrgs = JDBCUtil.queryDetailedOrg(employee.getOrgId(),structure_levels);
 					for (int i = 0; i < detailedOrgs.size(); i++) {
 						orgsInfoForchoose.add(JDBCUtil.queryChildOrgs(detailedOrgs.get(i).getParentOrgId()));
 					}
 				} else {
 					orgsInfoForchoose.add(childOrgs);
+				}
+				for (int j= detailedOrgs.size();j<structure_levels;j++){
+					detailedOrgs.add(new OrgInfo());
+				}
+				for (int i = orgsInfoForchoose.size(); i < structure_levels; i++) {
+					orgsInfoForchoose.add(new ArrayList<>());
 				}
 				dataPackage.setEmployee(employee);
 				dataPackage.setOrgInfo(detailedOrgs);
@@ -133,10 +142,18 @@ public class MemberInfoServlet extends HttpServlet {
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				out.close();
 			}
 
+		}else if(intent.equals("secondary")){
+			String parent_id = request.getParameter("parent_id");
+			ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(parent_id);
+			OrgListPackage package1 = new OrgListPackage();
+			package1.setOrgInfos(childOrgs);
+			Gson gson = new Gson();
+			String json = gson.toJson(package1);
+			out.write(json);
 		}
+		out.close();
 
 	}
 }
