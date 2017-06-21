@@ -147,6 +147,7 @@ public class JDBCUtil {
 				childOrgs.add(org);
 			}
 			System.out.println("childOrgs:"+childOrgs.size());
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{

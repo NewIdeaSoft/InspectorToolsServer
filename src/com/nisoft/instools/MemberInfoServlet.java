@@ -95,8 +95,10 @@ public class MemberInfoServlet extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 				out.write("false");
+				
 			}
 		} else if (intent.equals("update")) {
+			System.out.println("开始更新！");
 			Connection conn = null;
 			Statement st = null;
 			ResultSet rs = null;
@@ -104,25 +106,31 @@ public class MemberInfoServlet extends HttpServlet {
 				conn = JDBCUtil.getConnection();
 				st = conn.createStatement();
 				String json = request.getParameter("employee");
+				System.out.println(json);
 				Gson gson = new Gson();
 				Employee employee = gson.fromJson(json, Employee.class);
 				String name = employee.getName();
 				String employee_id = employee.getWorkNum();
 				String org_id = employee.getOrgId();
-				String stations_code = employee.getPositionsId().toString();
+				String stations_code = "";
+				if(employee.getPositionsId()!=null){
+					stations_code = employee.getPositionsId().toString();
+				}
+				System.out.println("stations_code"+stations_code);
 				String insertSql = "insert into employee" + "(phone,name,work_num,org_code,stations_code)values('"
-						+ phone + "','" + name + "','" + employee_id + "','" + org_id + "','" + stations_code
-						+ "') on duplicate key update name = values(name),employee_id=value(employee_id),"
-						+ "org_id = value(org_id),stations_code = values(stations_code)";
+						+ employee.getPhone() + "','" + name + "','" + employee_id + "','" + org_id + "','" + stations_code
+						+ "') on duplicate key update name = values(name),work_num=values(work_num),"
+						+ "org_code = values(org_code),stations_code = values(stations_code)";
+				System.out.println(insertSql);
 				int i = st.executeUpdate(insertSql);
 				if (i == 1) {
-					out.write("用户信息提交成功！");
+					out.write("true");
 				} else {
 					out.write("用户信息提交失败！");
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
-				out.write("用户信息提交失败！");
+				out.write("错误：用户信息提交失败！");
 			} finally {
 				try {
 					if (rs != null) {
