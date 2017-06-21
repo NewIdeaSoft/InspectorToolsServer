@@ -80,10 +80,10 @@ public class MemberInfoServlet extends HttpServlet {
 					orgsInfoForchoose.add(childOrgs);
 				}
 				for (int j= detailedOrgs.size();j<structure_levels;j++){
-					detailedOrgs.add(new OrgInfo());
+					detailedOrgs.add(null);
 				}
 				for (int i = orgsInfoForchoose.size(); i < structure_levels; i++) {
-					orgsInfoForchoose.add(new ArrayList<>());
+					orgsInfoForchoose.add(null);
 				}
 				dataPackage.setEmployee(employee);
 				dataPackage.setOrgInfo(detailedOrgs);

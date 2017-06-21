@@ -30,31 +30,6 @@ public class JDBCUtil {
 	}
 	
 	
-	public static ResultSet query(String table,String column,String value) {
-		String sql = "select *from "+table+" where "+column+"='"+value+"'";
-		Statement st = null;
-		ResultSet rs = null;
-		Connection conn = getConnection();
-		try {
-			st = conn.createStatement();
-			rs = st.executeQuery(sql);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			try {
-				st.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return rs;
-	}
-	
 	public static ArrayList<Employee> queryEmployeeResult(String column,String value){
 		String sql = "select *from employee where "+column+"='"+value+"'";
 		Statement st = null;
