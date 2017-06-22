@@ -14,9 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
-import com.nisoft.instools.jdbc.Company;
+import com.nisoft.instools.bean.Company;
+import com.nisoft.instools.gson.RegisterDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
-import com.nisoft.instools.jdbc.RegisterDataPackage;
 import com.nisoft.instools.utils.StringsUtil;
 
 //@WebServlet("/LoginServlet")

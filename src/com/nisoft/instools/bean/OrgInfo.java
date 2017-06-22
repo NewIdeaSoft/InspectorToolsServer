@@ -1,4 +1,4 @@
-package com.nisoft.instools.jdbc;
+package com.nisoft.instools.bean;
 
 public class OrgInfo {
 	private String mOrgId;

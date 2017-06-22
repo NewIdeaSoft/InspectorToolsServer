@@ -37,7 +37,7 @@ public class UploadServlet extends HttpServlet {
 			throws ServletException, IOException {
 		req.setCharacterEncoding("UTF-8");
 		DiskFileItemFactory factory = new DiskFileItemFactory();
-		String path = req.getSession().getServletContext().getRealPath("/upload");
+		String path = req.getSession().getServletContext().getRealPath("/WEB-INF/upload");
 		factory.setRepository(new File(path));
 		factory.setSizeThreshold(1024*1024);
 		ServletFileUpload upload = new ServletFileUpload(factory);
@@ -50,13 +50,11 @@ public class UploadServlet extends HttpServlet {
 					req.setAttribute(name, value);
 				}else{
 					String value = item.getName();
-					
 					int start = value.lastIndexOf("\\");
 					String filename = value.substring(start+1);
 					req.setAttribute(name, filename);
 					OutputStream out = new FileOutputStream(new File(path,filename));
 					InputStream in = item.getInputStream();
-					
 					int length = 0;
 					byte[] buf = new byte[1024];
 					System.out.println("获取文件总量的容量："+item.getSize());

@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import com.nisoft.instools.bean.Employee;
+import com.nisoft.instools.bean.OrgInfo;
 import com.nisoft.instools.utils.StringsUtil;
 
 public class JDBCUtil {

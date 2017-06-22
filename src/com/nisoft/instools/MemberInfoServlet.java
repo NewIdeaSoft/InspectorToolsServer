@@ -15,11 +15,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
-import com.nisoft.instools.jdbc.Employee;
-import com.nisoft.instools.jdbc.EmployeeDataPackage;
+import com.nisoft.instools.bean.Employee;
+import com.nisoft.instools.bean.OrgInfo;
+import com.nisoft.instools.gson.EmployeeDataPackage;
+import com.nisoft.instools.gson.OrgListPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
-import com.nisoft.instools.jdbc.OrgInfo;
-import com.nisoft.instools.jdbc.OrgListPackage;
 
 /**
  * Servlet implementation class MemberInfoServlet

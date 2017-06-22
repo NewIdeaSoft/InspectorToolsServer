@@ -6,7 +6,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
-import com.nisoft.instools.jdbc.Company;
+import com.nisoft.instools.bean.Company;
 import com.nisoft.instools.jdbc.JDBCUtil;
 
 public class TestGosn {

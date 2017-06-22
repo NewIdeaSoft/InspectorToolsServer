@@ -1,6 +1,8 @@
 package com.nisoft.instools.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class StringsUtil {
 
@@ -17,8 +19,27 @@ public class StringsUtil {
 				strings.add(s1);
 			}
 		}
-		System.out.println("structure"+strings.size());
 		return strings;
 	}
-
+	
+	public static String dateFormat(Date date) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String dateString = format.format(date);
+        return dateString;
+    }
+	
+	public static String dateFormatForNum(Date date){
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM");
+        String dateString = format.format(date);
+        return dateString;
+	}
+	
+	public static boolean compare(String s1,String s2){
+		int i1 = Integer.parseInt(s1);
+		int i2 = Integer.parseInt(s2);
+		if(i1>i2){
+			return true;
+		}
+		return false;
+	}
 }

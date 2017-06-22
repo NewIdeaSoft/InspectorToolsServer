@@ -1,6 +1,8 @@
-package com.nisoft.instools.jdbc;
+package com.nisoft.instools.gson;
 
 import java.util.ArrayList;
+
+import com.nisoft.instools.bean.Company;
 
 public class RegisterDataPackage {
 	ArrayList<Company> mCompanies;
