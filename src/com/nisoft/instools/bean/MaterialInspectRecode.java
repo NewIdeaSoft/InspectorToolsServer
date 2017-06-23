@@ -1,13 +1,12 @@
 package com.nisoft.instools.bean;
 
-import java.util.ArrayList;
 import java.util.Date;
-
 import com.nisoft.instools.utils.StringsUtil;
 
 public class MaterialInspectRecode {
 	private String mJobNum;
-    private ArrayList<String> mPicPath;
+    private String mPicFolderPath;
+    private String mInspectorId;
     private Date mDate;
     private String mType;
     private String mDescription;
@@ -18,14 +17,6 @@ public class MaterialInspectRecode {
 
     public void setJobNum(String jobNum) {
         mJobNum = jobNum;
-    }
-
-    public ArrayList<String> getPicPath() {
-        return mPicPath;
-    }
-
-    public void setPicPath(ArrayList<String> picPath) {
-        mPicPath = picPath;
     }
 
     public Date getDate() {
@@ -51,8 +42,24 @@ public class MaterialInspectRecode {
     public void setDescription(String description) {
         mDescription = description;
     }
+    
+    public String getPicFolderPath() {
+		return mPicFolderPath;
+	}
 
-    @Override
+	public void setPicFolderPath(String picFolderPath) {
+		mPicFolderPath = picFolderPath;
+	}
+
+	public String getInspectorId() {
+		return mInspectorId;
+	}
+
+	public void setInspectorId(String inspectorId) {
+		mInspectorId = inspectorId;
+	}
+
+	@Override
     public String toString() {
         String separator = System.getProperty("line.separator");
         String data = "";

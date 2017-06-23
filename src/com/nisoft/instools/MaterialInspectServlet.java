@@ -63,11 +63,33 @@ public class MaterialInspectServlet extends HttpServlet {
 			ArrayList<String> joblist = queryAll(type);
 			out.write(joblist.toString());
 			break;
-		case "start_work":
+		case "recoding":
 			String job_id = request.getParameter("job_id");
 			MaterialInspectRecode recode = queryJobWithId(job_id);
 			Gson gson = new Gson();
 			out.write(gson.toJson(recode));
+			break;
+		case "jub_num":
+			String job_num = request.getParameter("job_id");
+			MaterialInspectRecode recode1 = queryJobWithId(job_num);
+			if (recode1 == null) {
+				out.write("false");
+			} else {
+				out.write("true");
+			}
+			break;
+		case "upload":
+			String jobJson = request.getParameter("job_json");
+			Gson gson1 = new Gson();
+			MaterialInspectRecode jobRecode = gson1.fromJson(jobJson, MaterialInspectRecode.class);
+			String picFolderPath = "";
+			jobRecode.setPicFolderPath(picFolderPath);
+			int row = update(jobRecode);
+			if (row==1){
+				out.write("OK");
+			}else{
+				out.write("上传失败！");
+			}
 			break;
 		}
 		out.close();
@@ -175,7 +197,7 @@ public class MaterialInspectServlet extends HttpServlet {
 	}
 
 	private MaterialInspectRecode queryJobWithId(String job_id) {
-		MaterialInspectRecode job = new MaterialInspectRecode();
+		MaterialInspectRecode job = null;
 		String sql = "select * from material_inspect where job_id = '" + job_id + "'";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
@@ -184,7 +206,16 @@ public class MaterialInspectServlet extends HttpServlet {
 		try {
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
-			rs.first();
+			rs.last();
+			int row = rs.getRow();
+			if (row == 1) {
+				job = new MaterialInspectRecode();
+				job.setJobNum(rs.getString("job_id"));
+				job.setType(rs.getString("type"));
+				job.setDescription(rs.getString("description"));
+				job.setDate(new Date(rs.getLong("date")));
+				job.setInspectorId("inspector_id");
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -205,5 +236,37 @@ public class MaterialInspectServlet extends HttpServlet {
 			}
 		}
 		return job;
+	}
+
+	private int update(MaterialInspectRecode recode) {
+		String insertSql = "insert into job_material_inspect"
+				+ "(job_id,job_type,folder,description,inspector_id,date)values('" + recode.getJobNum() + "','"
+				+ recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
+				+ recode.getInspectorId() + "','" + recode.getDate().getTime()
+				+ "') on duplicate key update job_type = values(job_type),folder=values(folder),"
+				+ "description = values(description),inspector_id = values(inspector_id),"
+				+ "date = values(date)";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		int row = -1;
+		try {
+			st = conn.createStatement();
+			row = st.executeUpdate(insertSql);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return row;
 	}
 }
