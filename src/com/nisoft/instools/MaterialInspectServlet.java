@@ -57,6 +57,12 @@ public class MaterialInspectServlet extends HttpServlet {
 		switch (intent) {
 		case "new":
 			String newNum = getNewJobNum(type);
+			if(newNum!=null){
+				MaterialInspectRecode newRecode = new MaterialInspectRecode();
+				newRecode.setJobNum(newNum);
+				newRecode.setType(type);
+				update(newRecode);
+			}
 			out.write(newNum);
 			break;
 		case "query":
@@ -91,8 +97,45 @@ public class MaterialInspectServlet extends HttpServlet {
 				out.write("上传失败！");
 			}
 			break;
+		case "changeId":
+			String newId = request.getParameter("newId");
+			String oldId = request.getParameter("oldId");
+			int changedRow = changeJobId(newId,oldId);
+			if(changedRow == 1){
+				out.write("OK");
+			}else{
+				out.write("failed");
+			}
+			break;
 		}
 		out.close();
+	}
+
+	private int changeJobId(String newId,String oldId) {
+		String sql = "update job_material_inspect set job_id = '"+newId+"' where job_id = '"
+				+oldId+"'";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		int row = -1;
+		try {
+			st = conn.createStatement();
+			row = st.executeUpdate(sql);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return row;
 	}
 
 	private String getNewJobNum(String type) {
