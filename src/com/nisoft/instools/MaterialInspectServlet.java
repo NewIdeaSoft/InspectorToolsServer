@@ -97,7 +97,7 @@ public class MaterialInspectServlet extends HttpServlet {
 
 	private String getNewJobNum(String type) {
 		String number = null;
-		String sql = "select * from material_inspect where type = '" + type + "' order by job_id";
+		String sql = "select * from job_material_inspect where job_type = '" + type + "' order by job_id";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
@@ -105,39 +105,46 @@ public class MaterialInspectServlet extends HttpServlet {
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
 			rs.last();
-			String job_id = rs.getString("job_id");
-			String[] strsJobId = job_id.split("-");
+			int row = rs.getRow();
+			String job_id = null;
+			String[] strsJobId = null;
+			int num = 0;
 			Date date = new Date();
 			String fomatDate = StringsUtil.dateFormatForNum(date);
 			String[] strsDate = fomatDate.split("-");
-
-			int num = Integer.parseInt(strsJobId[strsJobId.length - 1]) + 1;
+			if(row>0){
+				job_id = rs.getString("job_id");
+				strsJobId = job_id.split("-");
+				num = Integer.parseInt(strsJobId[strsJobId.length - 1]) + 1;
+			}
+			
 			switch (type) {
 			case "金属材料":
-				if (strsDate[0].equals(strsJobId[0])) {
+				if(job_id!=null&&strsDate[0].equals(strsJobId[0])){
 					number = strsDate[0] + "-" + num;
-				} else {
+				}else {
 					number = strsDate[0] + "-" + 5001;
 				}
+				
 				break;
 			case "非金属材料":
-				if (strsDate[0].equals(strsJobId[0])) {
+				if (job_id!=null&&strsDate[0].equals(strsJobId[0])) {
 					number = strsDate[0] + "-" + num;
 				} else {
 					number = strsDate[0] + "-" + 1;
 				}
 				break;
 			case "外购件":
-				if (strsDate[0].equals(strsJobId[0]) && strsDate[1].equals(strsJobId[1])) {
-					number = strsDate[0] + "-" + strsDate[0] + "-" + num;
+				if (job_id!=null&&strsDate[0].equals(strsJobId[0]) && strsDate[1].equals(strsJobId[1])) {
+					number = strsDate[0] + "-" + strsDate[1] + "-" + num;
 				} else {
-					number = strsDate[0] + "-" + strsDate[0] + "-" + 1;
+					number = strsDate[0] + "-" + strsDate[1] + "-" + 1;
 				}
 				break;
 			case "其他":
 				break;
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
