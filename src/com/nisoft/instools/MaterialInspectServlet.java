@@ -289,10 +289,20 @@ public class MaterialInspectServlet extends HttpServlet {
 	}
 
 	private int update(MaterialInspectRecode recode) {
+//		String job_id = recode.getJobNum();
+//		String job_type = recode.getType();
+//		String folder = recode.getPicFolderPath();
+//		String description = recode.getDescription();
+//		String inspector_id = recode.getInspectorId();
+		Date date = recode.getDate();
+		if(date == null){
+			date = new Date();
+		}
+		long dateTime = date.getTime();
 		String insertSql = "insert into job_material_inspect"
 				+ "(job_id,job_type,folder,description,inspector_id,date)values('" + recode.getJobNum() + "','"
 				+ recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
-				+ recode.getInspectorId() + "','" + recode.getDate().getTime()
+				+ recode.getInspectorId() + "','" + dateTime
 				+ "') on duplicate key update job_type = values(job_type),folder=values(folder),"
 				+ "description = values(description),inspector_id = values(inspector_id),"
 				+ "date = values(date)";
