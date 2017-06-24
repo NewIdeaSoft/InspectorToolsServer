@@ -211,7 +211,7 @@ public class MaterialInspectServlet extends HttpServlet {
 
 	private ArrayList<String> queryAll(String type) {
 		ArrayList<String> allJobs = null;
-		String sql = "select * from material_inspect where type = '" + type + "' order by job_id";
+		String sql = "select * from job_material_inspect where job_type = '" + type + "' order by job_id";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
