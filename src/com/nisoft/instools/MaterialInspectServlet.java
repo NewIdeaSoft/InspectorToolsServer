@@ -97,7 +97,7 @@ public class MaterialInspectServlet extends HttpServlet {
 				out.write("上传失败！");
 			}
 			break;
-		case "changeId":
+		case "change_id":
 			String newId = request.getParameter("newId");
 			String oldId = request.getParameter("oldId");
 			int changedRow = changeJobId(newId,oldId);
@@ -114,12 +114,14 @@ public class MaterialInspectServlet extends HttpServlet {
 	private int changeJobId(String newId,String oldId) {
 		String sql = "update job_material_inspect set job_id = '"+newId+"' where job_id = '"
 				+oldId+"'";
+		System.out.println(sql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		int row = -1;
 		try {
 			st = conn.createStatement();
 			row = st.executeUpdate(sql);
+			System.out.println("changeJobId:"+row);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -248,7 +250,7 @@ public class MaterialInspectServlet extends HttpServlet {
 
 	private MaterialInspectRecode queryJobWithId(String job_id) {
 		MaterialInspectRecode job = null;
-		String sql = "select * from material_inspect where job_id = '" + job_id + "'";
+		String sql = "select * from job_material_inspect where job_id = '" + job_id + "'";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
@@ -306,12 +308,14 @@ public class MaterialInspectServlet extends HttpServlet {
 				+ "') on duplicate key update job_type = values(job_type),folder=values(folder),"
 				+ "description = values(description),inspector_id = values(inspector_id),"
 				+ "date = values(date)";
+		System.out.println(insertSql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		int row = -1;
 		try {
 			st = conn.createStatement();
 			row = st.executeUpdate(insertSql);
+			System.out.println("update row:"+row);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
