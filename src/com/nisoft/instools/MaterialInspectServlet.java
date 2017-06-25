@@ -91,7 +91,7 @@ public class MaterialInspectServlet extends HttpServlet {
 			String picFolderPath = "";
 			jobRecode.setPicFolderPath(picFolderPath);
 			int row = update(jobRecode);
-			if (row==1){
+			if (row>0){
 				out.write("OK");
 			}else{
 				out.write("上传失败！");
@@ -125,6 +125,7 @@ public class MaterialInspectServlet extends HttpServlet {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.out.println("更新编号失败！");
 		} finally {
 			try {
 				st.close();
@@ -191,6 +192,8 @@ public class MaterialInspectServlet extends HttpServlet {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			number = "获取编号失败！";
+			System.out.println("获取编号失败！");
 		} finally {
 			try {
 				rs.close();
@@ -228,6 +231,7 @@ public class MaterialInspectServlet extends HttpServlet {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.out.println("查询失败！");
 		} finally {
 			try {
 				rs.close();
@@ -263,13 +267,14 @@ public class MaterialInspectServlet extends HttpServlet {
 			if (row == 1) {
 				job = new MaterialInspectRecode();
 				job.setJobNum(rs.getString("job_id"));
-				job.setType(rs.getString("type"));
+				job.setType(rs.getString("job_type"));
 				job.setDescription(rs.getString("description"));
 				job.setDate(new Date(rs.getLong("date")));
 				job.setInspectorId("inspector_id");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.out.println("查询记录失败！");
 		} finally {
 			try {
 				rs.close();
@@ -319,6 +324,7 @@ public class MaterialInspectServlet extends HttpServlet {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.out.println("更新记录失败！");
 		} finally {
 			try {
 				st.close();
