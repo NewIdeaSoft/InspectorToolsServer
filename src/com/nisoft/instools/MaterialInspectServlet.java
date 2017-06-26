@@ -305,8 +305,8 @@ public class MaterialInspectServlet extends HttpServlet {
 		if(job_id == null||job_id.equals("")){
 			return -1;
 		}
-		String job_type = recode.getType();
-		String folder = recode.getPicFolderPath();
+//		String job_type = recode.getType();
+//		String folder = recode.getPicFolderPath();
 //		String description = recode.getDescription();
 //		String inspector_id = recode.getInspectorId();
 		Date date = recode.getDate();
@@ -314,13 +314,14 @@ public class MaterialInspectServlet extends HttpServlet {
 			date = new Date();
 		}
 		long dateTime = date.getTime();
+		long update_time = recode.getLatestUpdateTime();
 		String insertSql = "insert into job_material_inspect"
-				+ "(job_id,job_type,folder,description,inspector_id,date)values('" + recode.getJobNum() + "','"
+				+ "(job_id,job_type,folder,description,inspector_id,date,update_time)values('" + recode.getJobNum() + "','"
 				+ recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
-				+ recode.getInspectorId() + "','" + dateTime
+				+ recode.getInspectorId() + "','" + dateTime+ "','"+update_time
 				+ "') on duplicate key update job_type = values(job_type),folder=values(folder),"
 				+ "description = values(description),inspector_id = values(inspector_id),"
-				+ "date = values(date)";
+				+ "date = values(date),update_time = values(update_time)";
 		System.out.println(insertSql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;

@@ -10,6 +10,7 @@ public class MaterialInspectRecode {
     private Date mDate;
     private String mType;
     private String mDescription;
+    private long mLatestUpdateTime;
 
     public String getJobNum() {
         return mJobNum;
@@ -42,24 +43,31 @@ public class MaterialInspectRecode {
     public void setDescription(String description) {
         mDescription = description;
     }
-    
+
     public String getPicFolderPath() {
-		return mPicFolderPath;
-	}
+        return mPicFolderPath;
+    }
 
-	public void setPicFolderPath(String picFolderPath) {
-		mPicFolderPath = picFolderPath;
-	}
+    public void setPicFolderPath(String picFolderPath) {
+        mPicFolderPath = picFolderPath;
+    }
 
-	public String getInspectorId() {
-		return mInspectorId;
-	}
+    public String getInspectorId() {
+        return mInspectorId;
+    }
 
-	public void setInspectorId(String inspectorId) {
-		mInspectorId = inspectorId;
-	}
+    public void setInspectorId(String inspectorId) {
+        mInspectorId = inspectorId;
+    }
 
-	@Override
+    public long getLatestUpdateTime() {
+        return mLatestUpdateTime;
+    }
+
+    public void setLatestUpdateTime(long latestUpdateTime) {
+        mLatestUpdateTime = latestUpdateTime;
+    }
+    @Override
     public String toString() {
         String separator = System.getProperty("line.separator");
         String data = "";
