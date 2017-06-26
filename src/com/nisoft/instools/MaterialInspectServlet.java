@@ -26,6 +26,7 @@ import com.nisoft.instools.utils.StringsUtil;
 @WebServlet("/MaterialInspectServlet")
 public class MaterialInspectServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	public static final String PATH = "http://47.93.191.62:8080/recode/JXCZ/原材料检验/";
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -54,6 +55,7 @@ public class MaterialInspectServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String intent = request.getParameter("intent");
 		String type = request.getParameter("type");
+		
 		switch (intent) {
 		case "new":
 			String newNum = getNewJobNum(type);
@@ -88,7 +90,8 @@ public class MaterialInspectServlet extends HttpServlet {
 			String jobJson = request.getParameter("job_json");
 			Gson gson1 = new Gson();
 			MaterialInspectRecode jobRecode = gson1.fromJson(jobJson, MaterialInspectRecode.class);
-			String picFolderPath = "";
+			String picFolderPath = PATH+jobRecode.getType()+"/"+jobRecode.getJobNum();
+			System.out.println(picFolderPath);
 			jobRecode.setPicFolderPath(picFolderPath);
 			int row = update(jobRecode);
 			if (row>0){
@@ -100,7 +103,8 @@ public class MaterialInspectServlet extends HttpServlet {
 		case "change_id":
 			String newId = request.getParameter("newId");
 			String oldId = request.getParameter("oldId");
-			int changedRow = changeJobId(newId,oldId);
+			String folderPath = PATH+type+"/"+newId;
+			int changedRow = changeJobId(newId,oldId,folderPath);
 			if(changedRow == 1){
 				out.write("OK");
 			}else{
@@ -111,9 +115,9 @@ public class MaterialInspectServlet extends HttpServlet {
 		out.close();
 	}
 
-	private int changeJobId(String newId,String oldId) {
-		String sql = "update job_material_inspect set job_id = '"+newId+"' where job_id = '"
-				+oldId+"'";
+	private int changeJobId(String newId,String oldId,String folderPath) {
+		String sql = "update job_material_inspect set job_id = '"+newId+"',folder='"+folderPath
+				+"' where job_id = '"+oldId+"'";
 		System.out.println(sql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
@@ -271,6 +275,7 @@ public class MaterialInspectServlet extends HttpServlet {
 				job.setDescription(rs.getString("description"));
 				job.setDate(new Date(rs.getLong("date")));
 				job.setInspectorId("inspector_id");
+				job.setPicFolderPath(rs.getString("folder"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -296,9 +301,12 @@ public class MaterialInspectServlet extends HttpServlet {
 	}
 
 	private int update(MaterialInspectRecode recode) {
-//		String job_id = recode.getJobNum();
-//		String job_type = recode.getType();
-//		String folder = recode.getPicFolderPath();
+		String job_id = recode.getJobNum();
+		if(job_id == null||job_id.equals("")){
+			return -1;
+		}
+		String job_type = recode.getType();
+		String folder = recode.getPicFolderPath();
 //		String description = recode.getDescription();
 //		String inspector_id = recode.getInspectorId();
 		Date date = recode.getDate();

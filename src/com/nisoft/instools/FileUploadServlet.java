@@ -2,6 +2,8 @@ package com.nisoft.instools;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,46 +44,77 @@ public class FileUploadServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("utf-8");  
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		System.out.println("post");
+		request.setCharacterEncoding("UTF-8");
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/html;charset=utf-8");  
+		PrintWriter out = response.getWriter();
         String uploadFileName = ""; // 上传的文件名  
         String fieldName = ""; // 表单字段元素的name属性值  
         // 请求信息中的内容是否是multipart类型  
         boolean isMultipart = ServletFileUpload.isMultipartContent(request);  
-        // 上传文件的存储路径（服务器文件系统上的绝对文件路径）  
-        // String uploadFilePath =  
-        // request.getSession().getServletContext().getRealPath("\\test" );  
-        if (isMultipart) {  
+        System.out.println("isMultipart:"+isMultipart); 
+        
+        if (isMultipart) { 
+        	String orgId = "";
+        	String recode_type = "";
+        	String folderName = "";
             FileItemFactory factory = new DiskFileItemFactory();  
             ServletFileUpload upload = new ServletFileUpload(factory);  
             try {  
                 // 解析form表单中所有文件  
-                List<FileItem> items = upload.parseRequest(request);  
-                Iterator<FileItem> iter = items.iterator();  
+                List<FileItem> items = upload.parseRequest(request); 
+                ArrayList<FileItem> fileItems = new ArrayList<>();
+                Iterator<FileItem> iter = items.iterator();
                 while (iter.hasNext()) { // 依次处理每个文件  
                     FileItem item = (FileItem) iter.next();  
                     if (item.isFormField()) { // 普通表单字段  
                         fieldName = item.getFieldName(); // 表单字段的name属性值  
-                        if (fieldName.equals("user")) {  
+                        if (fieldName.equals("org_id")) {  
                             // 输出表单字段的值  
-                            System.out.print(item.getString("UTF-8") + "上传了文件.");  
-                        }  
+                        	orgId=item.getString("UTF-8"); 
+                        } else if(fieldName.equals("recode_type")){
+                        	recode_type=item.getString("UTF-8");
+                        } else if(fieldName.equals("folder_name")){
+                        	folderName=item.getString("UTF-8");
+                        }
                     } else { // 文件表单字段  
-                        String fileName = item.getName();  
-                        if (fileName != null && !fileName.equals("")) {  
-                            File fullFile = new File(item.getName());  
-                            File saveFile = new File("C:\\test", fullFile.getName());  
-                            item.write(saveFile);  
-                            uploadFileName = fullFile.getName();  
-                            System.out.println("上传的文件名是:" + uploadFileName);  
-                        }  
+                        fileItems.add(item);
+                    } 
+                    
+                }
+                String path = request.getSession().getServletContext()
+        				.getRealPath("/WEB-INF/recode/"+orgId+"/"+recode_type+"/"+folderName+"/");
+                System.out.println(path);
+        		File file = new File(path);
+        		if(!file.exists()){
+        			file.mkdirs();
+        		} 
+                for(FileItem item:fileItems){
+                	String fullFileName = item.getName();
+                	if (fullFileName != null && !fullFileName.equals("")) {  
+                        File fullFile = new File(fullFileName);
+                        String fileName = fullFile.getName();
+                        String [] strs = fileName.split("\\.");
+                        String fileType = strs[strs.length-1];
+                        File saveFile = new File(path, fileName); 
+                        if(!(fileType.equals("jpg")&&saveFile.exists())){
+							item.write(saveFile);
+							uploadFileName = fullFile.getName();
+							System.out.println("上传的文件名是:" + uploadFileName);
+							out.write(uploadFileName + "上传完成！");
+                        }
                     }  
-                }  
+                }
+               
             } catch (Exception e) {  
                 e.printStackTrace();  
-            }  
+            }  finally{
+            	out.close();
+            }
         }  
 		
 	}
-
 }
