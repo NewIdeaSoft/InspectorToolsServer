@@ -1,5 +1,6 @@
 package com.nisoft.instools;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.gson.Gson;
 import com.nisoft.instools.bean.MaterialInspectRecode;
 import com.nisoft.instools.jdbc.JDBCUtil;
+import com.nisoft.instools.utils.FileUtils;
 import com.nisoft.instools.utils.StringsUtil;
 
 /**
@@ -27,6 +29,7 @@ import com.nisoft.instools.utils.StringsUtil;
 public class MaterialInspectServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static final String PATH = "http://47.93.191.62:8080/recode/JXCZ/原材料检验/";
+	
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -74,6 +77,10 @@ public class MaterialInspectServlet extends HttpServlet {
 		case "recoding":
 			String job_id = request.getParameter("job_id");
 			MaterialInspectRecode recode = queryJobWithId(job_id);
+			String imagesDirPath = request.getSession().getServletContext()
+    				.getRealPath("/recode/JXCZ/"+type+"/"+job_id+"/");
+			System.out.println(imagesDirPath);
+			recode.setImagesName(getAllImagesName(imagesDirPath));
 			Gson gson = new Gson();
 			out.write(gson.toJson(recode));
 			break;
@@ -169,7 +176,7 @@ public class MaterialInspectServlet extends HttpServlet {
 			}
 			
 			switch (type) {
-			case "金属材料":
+			case "material/metal":
 				if(job_id!=null&&strsDate[0].equals(strsJobId[0])){
 					number = strsDate[0] + "-" + num;
 				}else {
@@ -177,21 +184,21 @@ public class MaterialInspectServlet extends HttpServlet {
 				}
 				
 				break;
-			case "非金属材料":
+			case "material/nonmetal":
 				if (job_id!=null&&strsDate[0].equals(strsJobId[0])) {
 					number = strsDate[0] + "-" + num;
 				} else {
 					number = strsDate[0] + "-" + 1;
 				}
 				break;
-			case "外购件":
+			case "material/purchased_parts":
 				if (job_id!=null&&strsDate[0].equals(strsJobId[0]) && strsDate[1].equals(strsJobId[1])) {
 					number = strsDate[0] + "-" + strsDate[1] + "-" + num;
 				} else {
 					number = strsDate[0] + "-" + strsDate[1] + "-" + 1;
 				}
 				break;
-			case "其他":
+			case "other":
 				break;
 			}
 		} catch (Exception e) {
@@ -347,5 +354,21 @@ public class MaterialInspectServlet extends HttpServlet {
 			}
 		}
 		return row;
+	}
+	
+	private ArrayList<String> getAllImagesName(String imagesDirPath){
+		
+		File dir = new File(imagesDirPath);
+		ArrayList<String> names = new ArrayList<>();
+		if(dir.exists()){
+			String [] filesName = dir.list();
+			for(String name:filesName){
+				String fileType = FileUtils.getFileType(name);
+				if(fileType.equals("jpg")||fileType.equals("bmp")){
+					names.add(name);
+				}
+			}
+		}
+		return names;
 	}
 }

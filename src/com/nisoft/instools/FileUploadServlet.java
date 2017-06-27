@@ -86,7 +86,7 @@ public class FileUploadServlet extends HttpServlet {
                     
                 }
                 String path = request.getSession().getServletContext()
-        				.getRealPath("/WEB-INF/recode/"+orgId+"/"+recode_type+"/"+folderName+"/");
+        				.getRealPath("/recode/"+orgId+"/"+recode_type+"/"+folderName+"/");
                 System.out.println(path);
         		File file = new File(path);
         		if(!file.exists()){
@@ -100,12 +100,14 @@ public class FileUploadServlet extends HttpServlet {
                         String [] strs = fileName.split("\\.");
                         String fileType = strs[strs.length-1];
                         File saveFile = new File(path, fileName); 
-                        if(!(fileType.equals("jpg")&&saveFile.exists())){
-							item.write(saveFile);
-							uploadFileName = fullFile.getName();
-							System.out.println("上传的文件名是:" + uploadFileName);
-							out.write(uploadFileName + "上传完成！");
-                        }
+                        if(fileType.equals("jpg")||fileType.equals("txt")){
+                        	if((!saveFile.exists())||fileType.equals("txt")){
+    							item.write(saveFile);
+    							uploadFileName = fullFile.getName();
+    							System.out.println("上传的文件名是:" + uploadFileName);
+    							out.write(uploadFileName + "上传完成！");
+                            }
+                        } 
                     }  
                 }
                
