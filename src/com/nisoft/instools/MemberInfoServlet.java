@@ -59,7 +59,6 @@ public class MemberInfoServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String phone = request.getParameter("phone");
 		if (intent.equals("query")) {
-
 			String company_id = request.getParameter("company_id");
 			int structure_levels = Integer.parseInt(request.getParameter("structure_levels"));
 			try {

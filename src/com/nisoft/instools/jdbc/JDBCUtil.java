@@ -46,9 +46,9 @@ public class JDBCUtil {
 				Employee member = new Employee();
 				String phone = rs.getString("phone");
 				String name = rs.getString("name");
-				String org_id = rs.getString("org_id");
+				String org_id = rs.getString("org_code");
 				String stations_code = rs.getString("stations_code");
-				String employee_id = rs.getString("employee_id");
+				String employee_id = rs.getString("work_num");
 				member.setPhone(phone);
 				member.setName(name);
 				member.setWorkNum(employee_id);

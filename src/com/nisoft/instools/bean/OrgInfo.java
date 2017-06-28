@@ -3,7 +3,7 @@ package com.nisoft.instools.bean;
 public class OrgInfo {
 	private String mOrgId;
     private String mOrgName;
-    private int mOrgLevel = -1;
+    private int mOrgLevel;
     private String mParentOrgId;
 
 
