@@ -2,24 +2,25 @@ package com.nisoft.instools;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.gson.Gson;
+import com.nisoft.instools.bean.Company;
 import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.bean.OrgInfo;
 import com.nisoft.instools.gson.EmployeeDataPackage;
 import com.nisoft.instools.gson.OrgListPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
+import com.nisoft.instools.utils.StringsUtil;
 
 /**
  * Servlet implementation class MemberInfoServlet
@@ -58,7 +59,7 @@ public class MemberInfoServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String phone = request.getParameter("phone");
 		if (intent.equals("query")) {
-			
+
 			String company_id = request.getParameter("company_id");
 			int structure_levels = Integer.parseInt(request.getParameter("structure_levels"));
 			try {
@@ -72,14 +73,14 @@ public class MemberInfoServlet extends HttpServlet {
 
 				if (employees.size() == 1) {
 					employee = employees.get(0);
-					detailedOrgs = JDBCUtil.queryDetailedOrg(employee.getOrgId(),structure_levels);
+					detailedOrgs = JDBCUtil.queryDetailedOrg(employee.getOrgId(), structure_levels);
 					for (int i = 0; i < detailedOrgs.size(); i++) {
 						orgsInfoForchoose.add(JDBCUtil.queryChildOrgs(detailedOrgs.get(i).getParentOrgId()));
 					}
 				} else {
 					orgsInfoForchoose.add(childOrgs);
 				}
-				for (int j= detailedOrgs.size();j<structure_levels;j++){
+				for (int j = detailedOrgs.size(); j < structure_levels; j++) {
 					detailedOrgs.add(null);
 				}
 				for (int i = orgsInfoForchoose.size(); i < structure_levels; i++) {
@@ -95,7 +96,7 @@ public class MemberInfoServlet extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 				out.write("false");
-				
+
 			}
 		} else if (intent.equals("update")) {
 			System.out.println("开始更新！");
@@ -113,13 +114,13 @@ public class MemberInfoServlet extends HttpServlet {
 				String employee_id = employee.getWorkNum();
 				String org_id = employee.getOrgId();
 				String stations_code = "";
-				if(employee.getPositionsId()!=null){
+				if (employee.getPositionsId() != null) {
 					stations_code = employee.getPositionsId().toString();
 				}
-				System.out.println("stations_code"+stations_code);
+				System.out.println("stations_code" + stations_code);
 				String insertSql = "insert into employee" + "(phone,name,work_num,org_code,stations_code)values('"
-						+ employee.getPhone() + "','" + name + "','" + employee_id + "','" + org_id + "','" + stations_code
-						+ "') on duplicate key update name = values(name),work_num=values(work_num),"
+						+ employee.getPhone() + "','" + name + "','" + employee_id + "','" + org_id + "','"
+						+ stations_code + "') on duplicate key update name = values(name),work_num=values(work_num),"
 						+ "org_code = values(org_code),stations_code = values(stations_code)";
 				System.out.println(insertSql);
 				int i = st.executeUpdate(insertSql);
@@ -152,7 +153,7 @@ public class MemberInfoServlet extends HttpServlet {
 				}
 			}
 
-		}else if(intent.equals("secondary")){
+		} else if (intent.equals("secondary")) {
 			String parent_id = request.getParameter("parent_id");
 			ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(parent_id);
 			OrgListPackage package1 = new OrgListPackage();
@@ -160,8 +161,102 @@ public class MemberInfoServlet extends HttpServlet {
 			Gson gson = new Gson();
 			String json = gson.toJson(package1);
 			out.write(json);
+		} else if (intent.equals("query_company")) {
+			String companyId = getCompanyId(phone);
+			Company company = new Company();
+			if(companyId!=null){
+				company = queryCompanyWithId(companyId);
+				if(company!=null){
+					Gson gson1 = new Gson();
+					String json = gson1.toJson(company);
+					out.write(json);
+				}else{
+					out.write("error!");
+				}		
+			}else{
+				out.write("error!");
+			}
 		}
 		out.close();
 
+	}
+
+	private String getCompanyId(String phone) {
+		String sql = "select *from user where phone = '" + phone + "'";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		ResultSet result = null;
+		try {
+			st = conn.createStatement();
+			result = st.executeQuery(sql);
+			result.last();
+			int row = result.getRow();
+			System.out.println(row + "");
+			result.first();
+			if (row == 1) {
+				String company_code = result.getString("companyId");
+				return company_code;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				result.close();
+			} catch (Exception e2) {
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+	
+	private Company queryCompanyWithId(String companyId){
+		String sql = "select *from company where companyId = '" + companyId + "'";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		ResultSet result = null;
+		try {
+			st = conn.createStatement();
+			result = st.executeQuery(sql);
+			result.last();
+			int row = result.getRow();
+			System.out.println(row + "");
+			result.first();
+			if (row == 1) {
+				String company_name = result.getString("company_name");
+				String structure = result.getString("structure");
+				Company company = new Company();
+				company.setOrgCode(companyId);
+				company.setOrgName(company_name);
+				company.setOrgStructure(StringsUtil.getStrings(structure));
+				return company;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				result.close();
+			} catch (Exception e2) {
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 }

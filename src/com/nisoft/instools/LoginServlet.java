@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
 import com.nisoft.instools.bean.Company;
+import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.gson.RegisterDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
 import com.nisoft.instools.utils.StringsUtil;
@@ -25,7 +26,7 @@ public class LoginServlet extends HttpServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	private static int i = 0;
 
 	public LoginServlet() {
@@ -86,7 +87,7 @@ public class LoginServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		i++;
-		System.out.println("第"+i+"名用户");
+		System.out.println("第" + i + "名用户");
 		resp.setCharacterEncoding("UTF-8");
 		req.setCharacterEncoding("UTF-8");
 		resp.setContentType("text/html");
@@ -109,21 +110,28 @@ public class LoginServlet extends HttpServlet {
 				int row = result.getRow();
 				System.out.println(row + "");
 				result.first();
-				if(row==1){
+				if (row == 1) {
 					String resultPassword = result.getString("password");
 					System.out.println(resultPassword);
 					if (resultPassword.equals(password)) {
-						out.write("true");
+						Employee employee = queryEmployeeWithPhone(userName);
+						if (employee != null) {
+							Gson gson = new Gson();
+							String json = gson.toJson(employee);
+							out.write(json);
+						} else {
+							out.write("non_info");
+						}
 					} else {
-						out.write("登陆失败:密码错误！");
+						out.write("error:1");
 					}
-				}else{
-					out.write("登陆失败：用户不存在！");
+				} else {
+					out.write("error:2");
 				}
-				
-			}else if (type.equals("register")) {
-				String insertSql = "insert into user (phone,password,companyId)values('" + userName + "','"
-						+ password + "','" + companyCode + "')";
+
+			} else if (type.equals("register")) {
+				String insertSql = "insert into user (phone,password,companyId)values('" + userName + "','" + password
+						+ "','" + companyCode + "')";
 				int i = st.executeUpdate(insertSql);
 				System.out.println("增加了 " + i + " 名新用户！");
 				if (i == 1) {
@@ -131,10 +139,9 @@ public class LoginServlet extends HttpServlet {
 				} else {
 					out.write("注册失败！");
 				}
-			} 
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			out.write("系统错误！");
+			out.write("error:3");
 		} finally {
 			try {
 				result.close();
@@ -152,6 +159,55 @@ public class LoginServlet extends HttpServlet {
 			}
 			out.close();
 		}
+	}
+
+	private Employee queryEmployeeWithPhone(String phone) {
+		String sql = "select * from employee where phone = '" + phone + "'";
+		Statement st = null;
+		ResultSet rs = null;
+		Connection conn = JDBCUtil.getConnection();
+		try {
+			Employee employee = new Employee();
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			rs.last();
+			int row = rs.getRow();
+			if (row > 0) {
+				String name = rs.getString("name");
+				String org_id = rs.getString("org_code");
+				String work_num = rs.getString("work_num");
+				String strings = rs.getString("stations_code");
+				if (strings != null) {
+					ArrayList<String> stations_id = StringsUtil.getStrings(strings);
+					employee.setPositionsId(stations_id);
+				}
+				employee.setWorkNum(work_num);
+				employee.setPhone(phone);
+				employee.setName(name);
+				employee.setOrgId(org_id);
+				return employee;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return null;
 	}
 
 }
