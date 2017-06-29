@@ -86,10 +86,12 @@ public class MaterialInspectServlet extends HttpServlet {
 			String inspectorId=recode.getInspectorId();
 			Employee employee = JDBCUtil.queryEmployeeWithPhone(inspectorId);
 			RecodeDataPackage dataPackage = new RecodeDataPackage();
-			dataPackage.setName(employee.getName());
+			if(employee!=null){
+				dataPackage.setName(employee.getName());
+			}
 			dataPackage.setRecode(recode);
 			Gson gson = new Gson();
-			out.write(gson.toJson(recode));
+			out.write(gson.toJson(dataPackage));
 			break;
 		case "jub_num":
 			String job_num = request.getParameter("job_id");
@@ -288,7 +290,7 @@ public class MaterialInspectServlet extends HttpServlet {
 				job.setType(rs.getString("job_type"));
 				job.setDescription(rs.getString("description"));
 				job.setDate(new Date(rs.getLong("date")));
-				job.setInspectorId("inspector_id");
+				job.setInspectorId(rs.getString("inspector_id"));
 				job.setPicFolderPath(rs.getString("folder"));
 			}
 		} catch (SQLException e) {

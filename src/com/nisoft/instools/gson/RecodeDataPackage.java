@@ -17,5 +17,4 @@ public class RecodeDataPackage {
 	public void setRecode(MaterialInspectRecode recode) {
 		mRecode = recode;
 	}
-	
 }
