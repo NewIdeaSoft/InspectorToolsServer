@@ -148,7 +148,7 @@ public class JDBCUtil {
 				org.setOrgLevel(rs.getInt("level"));
 				childOrgs.add(org);
 			}
-			System.out.println("childOrgs:"+childOrgs.size());
+			System.out.println(parent_id+"have childOrgs:"+childOrgs.size());
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -171,4 +171,53 @@ public class JDBCUtil {
 		}
 		return childOrgs;
 	}
+	public static Employee queryEmployeeWithPhone(String phone) {
+		String sql = "select * from employee where phone = '" + phone + "'";
+		Statement st = null;
+		ResultSet rs = null;
+		Connection conn = JDBCUtil.getConnection();
+		try {
+			Employee employee = new Employee();
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			rs.last();
+			int row = rs.getRow();
+			if (row > 0) {
+				String name = rs.getString("name");
+				String org_id = rs.getString("org_code");
+				String work_num = rs.getString("work_num");
+				String strings = rs.getString("stations_code");
+				if (strings != null) {
+					ArrayList<String> stations_id = StringsUtil.getStrings(strings);
+					employee.setPositionsId(stations_id);
+				}
+				employee.setWorkNum(work_num);
+				employee.setPhone(phone);
+				employee.setName(name);
+				employee.setOrgId(org_id);
+				return employee;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return null;
+	}
+
 }

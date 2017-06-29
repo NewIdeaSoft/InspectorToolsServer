@@ -17,7 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
+import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.bean.MaterialInspectRecode;
+import com.nisoft.instools.gson.RecodeDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
 import com.nisoft.instools.utils.FileUtils;
 import com.nisoft.instools.utils.StringsUtil;
@@ -81,6 +83,11 @@ public class MaterialInspectServlet extends HttpServlet {
     				.getRealPath("/recode/JXCZ/"+type+"/"+job_id+"/");
 			System.out.println(imagesDirPath);
 			recode.setImagesName(getAllImagesName(imagesDirPath));
+			String inspectorId=recode.getInspectorId();
+			Employee employee = JDBCUtil.queryEmployeeWithPhone(inspectorId);
+			RecodeDataPackage dataPackage = new RecodeDataPackage();
+			dataPackage.setName(employee.getName());
+			dataPackage.setRecode(recode);
 			Gson gson = new Gson();
 			out.write(gson.toJson(recode));
 			break;
