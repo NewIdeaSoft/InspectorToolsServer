@@ -63,15 +63,13 @@ public class MemberInfoServlet extends HttpServlet {
 			int structure_levels = Integer.parseInt(request.getParameter("structure_levels"));
 			try {
 				EmployeeDataPackage dataPackage = new EmployeeDataPackage();
-				Employee employee = new Employee();
 				ArrayList<OrgInfo> detailedOrgs = new ArrayList<>();
 
 				ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(company_id);
 				ArrayList<ArrayList<OrgInfo>> orgsInfoForchoose = new ArrayList<>();
-				ArrayList<Employee> employees = JDBCUtil.queryEmployeeResult("phone", phone);
+				Employee employee = JDBCUtil.queryEmployeeWithPhone(phone);
 
-				if (employees.size() == 1) {
-					employee = employees.get(0);
+				if (employee!=null) {
 					detailedOrgs = JDBCUtil.queryDetailedOrg(employee.getOrgId(), structure_levels);
 					for (int i = 0; i < detailedOrgs.size(); i++) {
 						orgsInfoForchoose.add(JDBCUtil.queryChildOrgs(detailedOrgs.get(i).getParentOrgId()));
@@ -116,11 +114,12 @@ public class MemberInfoServlet extends HttpServlet {
 				if (employee.getPositionsId() != null) {
 					stations_code = employee.getPositionsId().toString();
 				}
+				String companyId = employee.getCompanyId();
 				System.out.println("stations_code" + stations_code);
-				String insertSql = "insert into employee" + "(phone,name,work_num,org_code,stations_code)values('"
+				String insertSql = "insert into employee" + "(phone,name,work_num,org_code,stations_code,company_id)values('"
 						+ employee.getPhone() + "','" + name + "','" + employee_id + "','" + org_id + "','"
-						+ stations_code + "') on duplicate key update name = values(name),work_num=values(work_num),"
-						+ "org_code = values(org_code),stations_code = values(stations_code)";
+						+ stations_code + "','" + companyId+ "') on duplicate key update name = values(name),work_num=values(work_num),"
+						+ "org_code = values(org_code),stations_code = values(stations_code),company_id=values(company_id)";
 				System.out.println(insertSql);
 				int i = st.executeUpdate(insertSql);
 				if (i == 1) {

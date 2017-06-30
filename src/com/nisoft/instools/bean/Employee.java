@@ -7,6 +7,7 @@ public class Employee {
 	private String mPhone;
 	private String mWorkNum;
 	private String mOrgId;
+	private String mCompanyId;
 	private ArrayList<String> mPositionsId;
 	public String getName() {
 		return mName;
@@ -37,6 +38,12 @@ public class Employee {
 	}
 	public void setPositionsId(ArrayList<String> positionsId) {
 		mPositionsId = positionsId;
+	}
+	public String getCompanyId() {
+		return mCompanyId;
+	}
+	public void setCompanyId(String companyId) {
+		mCompanyId = companyId;
 	}
 	
 }

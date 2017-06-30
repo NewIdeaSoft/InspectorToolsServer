@@ -32,53 +32,6 @@ public class JDBCUtil {
 	}
 	
 	
-	public static ArrayList<Employee> queryEmployeeResult(String column,String value){
-		String sql = "select *from employee where "+column+"='"+value+"'";
-		Statement st = null;
-		ResultSet rs = null;
-		Connection conn = getConnection();
-		ArrayList<Employee> employees = new ArrayList<Employee>();
-		try {
-			st = conn.createStatement();
-			rs = st.executeQuery(sql);
-			rs.beforeFirst();
-			while(rs.next()){
-				Employee member = new Employee();
-				String phone = rs.getString("phone");
-				String name = rs.getString("name");
-				String org_id = rs.getString("org_code");
-				String stations_code = rs.getString("stations_code");
-				String employee_id = rs.getString("work_num");
-				member.setPhone(phone);
-				member.setName(name);
-				member.setWorkNum(employee_id);
-				member.setOrgId(org_id);
-				member.setPositionsId(StringsUtil.getStrings(stations_code));
-				employees.add(member);
-			}
-			System.out.println(employees.toString());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			try {
-				rs.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			try {
-				st.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return employees;
-	}
-	
 	public static OrgInfo queryOrg(String org_code){
 		OrgInfo org = new OrgInfo();
 		String sql = "select *from org where org_id='"+org_code+"'";
@@ -187,6 +140,7 @@ public class JDBCUtil {
 				String org_id = rs.getString("org_code");
 				String work_num = rs.getString("work_num");
 				String strings = rs.getString("stations_code");
+				String companyId = rs.getString("company_id");
 				if (strings != null) {
 					ArrayList<String> stations_id = StringsUtil.getStrings(strings);
 					employee.setPositionsId(stations_id);
@@ -195,6 +149,7 @@ public class JDBCUtil {
 				employee.setPhone(phone);
 				employee.setName(name);
 				employee.setOrgId(org_id);
+				employee.setCompanyId(companyId);
 				return employee;
 			}
 		} catch (SQLException e) {

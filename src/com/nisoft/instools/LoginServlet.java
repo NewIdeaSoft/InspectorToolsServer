@@ -114,7 +114,7 @@ public class LoginServlet extends HttpServlet {
 					String resultPassword = result.getString("password");
 					System.out.println(resultPassword);
 					if (resultPassword.equals(password)) {
-						Employee employee = queryEmployeeWithPhone(userName);
+						Employee employee = JDBCUtil.queryEmployeeWithPhone(userName);
 						if (employee != null) {
 							Gson gson = new Gson();
 							String json = gson.toJson(employee);
@@ -160,54 +160,4 @@ public class LoginServlet extends HttpServlet {
 			out.close();
 		}
 	}
-
-	private Employee queryEmployeeWithPhone(String phone) {
-		String sql = "select * from employee where phone = '" + phone + "'";
-		Statement st = null;
-		ResultSet rs = null;
-		Connection conn = JDBCUtil.getConnection();
-		try {
-			Employee employee = new Employee();
-			st = conn.createStatement();
-			rs = st.executeQuery(sql);
-			rs.last();
-			int row = rs.getRow();
-			if (row > 0) {
-				String name = rs.getString("name");
-				String org_id = rs.getString("org_code");
-				String work_num = rs.getString("work_num");
-				String strings = rs.getString("stations_code");
-				if (strings != null) {
-					ArrayList<String> stations_id = StringsUtil.getStrings(strings);
-					employee.setPositionsId(stations_id);
-				}
-				employee.setWorkNum(work_num);
-				employee.setPhone(phone);
-				employee.setName(name);
-				employee.setOrgId(org_id);
-				return employee;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				rs.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			try {
-				st.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return null;
-	}
-
 }

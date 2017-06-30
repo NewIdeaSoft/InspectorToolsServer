@@ -8,5 +8,6 @@ public class EmployeeTable {
 		public static final String MEM_ORG = "org_code";
 		public static final String MEM_STATIONS = "station_code";
 		public static final String MEM_PHONE = "phone";	
+		public static final String MEM_COMANY_ID = "company_id";
 	}
 }
