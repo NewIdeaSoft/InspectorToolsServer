@@ -20,6 +20,7 @@ import com.nisoft.instools.bean.ImageRecode;
 import com.nisoft.instools.bean.ProblemDataPackage;
 import com.nisoft.instools.bean.ProblemRecode;
 import com.nisoft.instools.bean.Recode;
+import com.nisoft.instools.gson.ProblemListDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
 import com.nisoft.instools.strings.RecodeDbSchema.RecodeTable;
 import com.nisoft.instools.utils.StringsUtil;
@@ -81,19 +82,19 @@ public class ProblemRecodeServlet extends HttpServlet {
 				Gson gson = new Gson();
 				String recodeResult = gson.toJson(problem);
 				out.write(recodeResult);
+			} else {
+				out.write("error");
 			}
 			break;
 		case "list":
 			ArrayList<ProblemRecode> allRecodes = queryAll();
-			ArrayList<String> recodeJsonList = new ArrayList<>();
 			if (allRecodes == null || allRecodes.size() == 0) {
 				out.write("zero");
 			} else {
-				for (ProblemRecode recode : allRecodes) {
-					Gson gson = new Gson();
-					recodeJsonList.add(gson.toJson(recode));
-				}
-				out.write(recodeJsonList.toString());
+				ProblemListDataPackage data = new ProblemListDataPackage();
+				data.setProblemRecodes(allRecodes);
+				Gson gson = new Gson();
+				out.write(gson.toJson(data));
 			}
 			break;
 		}
@@ -283,8 +284,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 					recode.setSuspects(suspects);
 					allRecodes.add(recode);
 				}
-			} else {
-				return null;
+				return allRecodes;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -334,28 +334,25 @@ public class ProblemRecodeServlet extends HttpServlet {
 			int row = rs.getRow();
 			if (row > 0) {
 				rs.first();
-				
+
 				String authorId = rs.getString(RecodeTable.Cols.AUTHOR);
 				String description = rs.getString(RecodeTable.Cols.DESCRIPTION_TEXT);
 				String type = rs.getString(RecodeTable.Cols.TYPE);
 				long dateTime = rs.getLong(RecodeTable.Cols.DATE);
 				long updateTime = rs.getLong(RecodeTable.Cols.UPDATE_TIME);
 				Date date = new Date(dateTime);
-				if(table.equals(RecodeTable.ANALYSIS_NAME)||table.equals(RecodeTable.PROBLEM_NAME)){
+				if (table.equals(RecodeTable.ANALYSIS_NAME) || table.equals(RecodeTable.PROBLEM_NAME)) {
 					return new Recode(problemId, type, authorId, date, description, updateTime);
-				}else if(table.equals(RecodeTable.RESULT_NAME)){
+				} else if (table.equals(RecodeTable.RESULT_NAME)) {
 					return new ImageRecode(problemId, type, authorId, date, description, updateTime);
-				}else if(table.equals(RecodeTable.PROBLEM_NAME)){
+				} else if (table.equals(RecodeTable.PROBLEM_NAME)) {
 					String address = rs.getString(RecodeTable.Cols.ADDRESS);
 					String suspectsString = rs.getString(RecodeTable.Cols.SUSPECTS);
 					ArrayList<String> suspects = StringsUtil.getStrings(suspectsString);
 					String title = rs.getString(RecodeTable.Cols.TITLE);
-					return new ProblemRecode(problemId, type, authorId, date, description, updateTime, address, suspects, title);
-				}else {
-					return null;
+					return new ProblemRecode(problemId, type, authorId, date, description, updateTime, address,
+							suspects, title);
 				}
-			} else {
-				return null;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
