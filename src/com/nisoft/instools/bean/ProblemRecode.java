@@ -1,6 +1,7 @@
 package com.nisoft.instools.bean;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by NewIdeaSoft on 2017/7/1.
@@ -16,7 +17,14 @@ public class ProblemRecode extends ImageRecode {
     public ProblemRecode(String recodeId) {
         super(recodeId);
     }
-    public String getAddress() {
+    
+    public ProblemRecode(String recodeId, String type, String author, Date date, String description, long updateTime,String adress,ArrayList<String> suspects,String title) {
+		super(recodeId, type, author, date, description, updateTime);
+		mAddress = adress;
+		mSuspects = suspects;
+		mTitle = title;
+	}
+	public String getAddress() {
         return mAddress;
     }
 

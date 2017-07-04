@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
 import com.nisoft.instools.bean.ImageRecode;
 import com.nisoft.instools.bean.ProblemDataPackage;
 import com.nisoft.instools.bean.ProblemRecode;
@@ -72,6 +74,28 @@ public class ProblemRecodeServlet extends HttpServlet {
 				out.write("false");
 			}
 			break;
+		case "recoding":
+			String problemId = request.getParameter("problem_id");
+			ProblemDataPackage problem = queryProblemById(problemId);
+			if (problem != null) {
+				Gson gson = new Gson();
+				String recodeResult = gson.toJson(problem);
+				out.write(recodeResult);
+			}
+			break;
+		case "list":
+			ArrayList<ProblemRecode> allRecodes = queryAll();
+			ArrayList<String> recodeJsonList = new ArrayList<>();
+			if (allRecodes == null || allRecodes.size() == 0) {
+				out.write("zero");
+			} else {
+				for (ProblemRecode recode : allRecodes) {
+					Gson gson = new Gson();
+					recodeJsonList.add(gson.toJson(recode));
+				}
+				out.write(recodeJsonList.toString());
+			}
+			break;
 		}
 		out.close();
 	}
@@ -128,10 +152,6 @@ public class ProblemRecodeServlet extends HttpServlet {
 		if (job_id == null || job_id.equals("")) {
 			return -1;
 		}
-		// String job_type = recode.getType();
-		// String folder = recode.getPicFolderPath();
-		// String description = recode.getDescription();
-		// String inspector_id = recode.getInspectorId();
 		Date date = recode.getDate();
 		if (date == null) {
 			date = new Date();
@@ -187,7 +207,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 			sql = "insert into " + table + "(" + RecodeTable.Cols.PROBLEM_ID + "," + RecodeTable.Cols.TYPE + ","
 					+ RecodeTable.Cols.AUTHOR + "," + RecodeTable.Cols.DATE + "," + RecodeTable.Cols.UPDATE_TIME + ","
 					+ RecodeTable.Cols.DESCRIPTION_TEXT + ")values('" + recode.getRecodeId() + "','" + recode.getType()
-					+ "','" + recode.getAuthor() + "','" + dateTime  + "','" + update_time + "','"
+					+ "','" + recode.getAuthor() + "','" + dateTime + "','" + update_time + "','"
 					+ recode.getDescription() + "') on duplicate key update " + RecodeTable.Cols.TYPE + "= values("
 					+ RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR + "= values(" + RecodeTable.Cols.AUTHOR
 					+ ")," + RecodeTable.Cols.DATE + "= values(" + RecodeTable.Cols.DATE + "),"
@@ -225,5 +245,138 @@ public class ProblemRecodeServlet extends HttpServlet {
 					+ "= values(" + RecodeTable.Cols.ADDRESS + ")";
 		}
 		return sql;
+	}
+
+	private ArrayList<ProblemRecode> queryAll() {
+		String sql = "select * from problem";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			rs.last();
+			int row = rs.getRow();
+			if (row > 0) {
+				ArrayList<ProblemRecode> allRecodes = new ArrayList<>();
+				rs.beforeFirst();
+				while (rs.next()) {
+					String problemId = rs.getString(RecodeTable.Cols.PROBLEM_ID);
+					String authorId = rs.getString(RecodeTable.Cols.AUTHOR);
+					String description = rs.getString(RecodeTable.Cols.DESCRIPTION_TEXT);
+					String address = rs.getString(RecodeTable.Cols.ADDRESS);
+					String suspectsString = rs.getString(RecodeTable.Cols.SUSPECTS);
+					ArrayList<String> suspects = StringsUtil.getStrings(suspectsString);
+					String title = rs.getString(RecodeTable.Cols.TITLE);
+					String type = rs.getString(RecodeTable.Cols.TYPE);
+					long dateTime = rs.getLong(RecodeTable.Cols.DATE);
+					long updateTime = rs.getLong(RecodeTable.Cols.UPDATE_TIME);
+					Date date = new Date(dateTime);
+					ProblemRecode recode = new ProblemRecode(problemId);
+					recode.setAuthor(authorId);
+					recode.setTitle(title);
+					recode.setAddress(address);
+					recode.setDate(date);
+					recode.setDescription(description);
+					recode.setType(type);
+					recode.setUpdateTime(updateTime);
+					recode.setSuspects(suspects);
+					allRecodes.add(recode);
+				}
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return null;
+	}
+
+	private ProblemDataPackage queryProblemById(String problemId) {
+		Recode program = queryRecodeById(RecodeTable.PROGRAM_NAME, problemId);
+		ProblemRecode problemRecode = (ProblemRecode) queryRecodeById(RecodeTable.PROBLEM_NAME, problemId);
+		Recode analysis = queryRecodeById(RecodeTable.ANALYSIS_NAME, problemId);
+		ImageRecode result = (ImageRecode) queryRecodeById(RecodeTable.RESULT_NAME, problemId);
+		ProblemDataPackage problem = new ProblemDataPackage();
+		problem.setAnalysis(analysis);
+		problem.setProblem(problemRecode);
+		problem.setProgram(program);
+		problem.setResultRecode(result);
+		return problem;
+	}
+
+	private Recode queryRecodeById(String table, String problemId) {
+		String sql = "select * from " + table + " where " + RecodeTable.Cols.PROBLEM_ID + " = " + problemId;
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			rs.last();
+			int row = rs.getRow();
+			if (row > 0) {
+				rs.first();
+				
+				String authorId = rs.getString(RecodeTable.Cols.AUTHOR);
+				String description = rs.getString(RecodeTable.Cols.DESCRIPTION_TEXT);
+				String type = rs.getString(RecodeTable.Cols.TYPE);
+				long dateTime = rs.getLong(RecodeTable.Cols.DATE);
+				long updateTime = rs.getLong(RecodeTable.Cols.UPDATE_TIME);
+				Date date = new Date(dateTime);
+				if(table.equals(RecodeTable.ANALYSIS_NAME)||table.equals(RecodeTable.PROBLEM_NAME)){
+					return new Recode(problemId, type, authorId, date, description, updateTime);
+				}else if(table.equals(RecodeTable.RESULT_NAME)){
+					return new ImageRecode(problemId, type, authorId, date, description, updateTime);
+				}else if(table.equals(RecodeTable.PROBLEM_NAME)){
+					String address = rs.getString(RecodeTable.Cols.ADDRESS);
+					String suspectsString = rs.getString(RecodeTable.Cols.SUSPECTS);
+					ArrayList<String> suspects = StringsUtil.getStrings(suspectsString);
+					String title = rs.getString(RecodeTable.Cols.TITLE);
+					return new ProblemRecode(problemId, type, authorId, date, description, updateTime, address, suspects, title);
+				}else {
+					return null;
+				}
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+
 	}
 }

@@ -16,8 +16,18 @@ public class Recode {
 
     public Recode() {
     }
+    
+    public Recode(String recodeId, String type, String author, Date date, String description, long updateTime) {
+		super();
+		mRecodeId = recodeId;
+		mType = type;
+		mAuthor = author;
+		mDate = date;
+		mDescription = description;
+		mUpdateTime = updateTime;
+	}
 
-    public Recode(String recodeId) {
+	public Recode(String recodeId) {
         mRecodeId = recodeId;
     }
 
