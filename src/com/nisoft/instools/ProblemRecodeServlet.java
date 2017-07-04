@@ -77,7 +77,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 	}
 
 	private String getRecodeId() {
-		String sql = "select *from problem_recode recode order by problem_id";
+		String sql = "select *from problem order by problem_id";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
@@ -187,8 +187,8 @@ public class ProblemRecodeServlet extends HttpServlet {
 			sql = "insert into " + table + "(" + RecodeTable.Cols.PROBLEM_ID + "," + RecodeTable.Cols.TYPE + ","
 					+ RecodeTable.Cols.AUTHOR + "," + RecodeTable.Cols.DATE + "," + RecodeTable.Cols.UPDATE_TIME + ","
 					+ RecodeTable.Cols.DESCRIPTION_TEXT + ")values('" + recode.getRecodeId() + "','" + recode.getType()
-					+ "','" + recode.getAuthor() + "','" + dateTime + "','" + "" + "','" + update_time + "','"
-					+ recode.getDescription() + "') on duplicate key update" + RecodeTable.Cols.TYPE + "= values("
+					+ "','" + recode.getAuthor() + "','" + dateTime  + "','" + update_time + "','"
+					+ recode.getDescription() + "') on duplicate key update " + RecodeTable.Cols.TYPE + "= values("
 					+ RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR + "= values(" + RecodeTable.Cols.AUTHOR
 					+ ")," + RecodeTable.Cols.DATE + "= values(" + RecodeTable.Cols.DATE + "),"
 					+ RecodeTable.Cols.UPDATE_TIME + "= values(" + RecodeTable.Cols.UPDATE_TIME + "),"
@@ -199,7 +199,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 					+ RecodeTable.Cols.DESCRIPTION_TEXT + "," + RecodeTable.Cols.FOLDER_PATH + ")values('"
 					+ recode.getRecodeId() + "','" + recode.getType() + "','" + recode.getAuthor() + "','" + dateTime
 					+ "','" + update_time + "','" + recode.getDescription() + "','"
-					+ ((ImageRecode) recode).getImagesFolderPath() + "'" + "') on duplicate key update"
+					+ ((ImageRecode) recode).getImagesFolderPath() + "') on duplicate key update "
 					+ RecodeTable.Cols.TYPE + "= values(" + RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR
 					+ "= values(" + RecodeTable.Cols.AUTHOR + ")," + RecodeTable.Cols.DATE + "= values("
 					+ RecodeTable.Cols.DATE + ")," + RecodeTable.Cols.UPDATE_TIME + "= values("
@@ -214,7 +214,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 					+ ")values('" + recode.getRecodeId() + "','" + recode.getType() + "','" + recode.getAuthor() + "','"
 					+ dateTime + "','" + "" + "','" + recode.getUpdateTime() + "','" + recode.getDescription() + "','"
 					+ ((ProblemRecode) recode).getImagesFolderPath() + "','" + ((ProblemRecode) recode).getTitle()
-					+ "','" + ((ProblemRecode) recode).getAddress() + "','" + "') on duplicate key update"
+					+ "','" + ((ProblemRecode) recode).getAddress() + "') on duplicate key update "
 					+ RecodeTable.Cols.TYPE + "= values(" + RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR
 					+ "= values(" + RecodeTable.Cols.AUTHOR + ")," + RecodeTable.Cols.DATE + "= values("
 					+ RecodeTable.Cols.DATE + ")," + RecodeTable.Cols.SUSPECTS + "= values(" + RecodeTable.Cols.SUSPECTS
