@@ -97,6 +97,17 @@ public class ProblemRecodeServlet extends HttpServlet {
 				out.write(gson.toJson(data));
 			}
 			break;
+		case "update":
+			String json = request.getParameter("job_json");
+			Gson gson = new Gson();
+			ProblemDataPackage problemRecode = gson.fromJson(json, ProblemDataPackage.class);
+			boolean isSuccess = update(problemRecode);
+			if(isSuccess){
+				out.write("OK");
+			}else{
+				out.write("更新数据失败！");
+			}
+			break;
 		}
 		out.close();
 	}
