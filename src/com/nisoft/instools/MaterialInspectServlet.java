@@ -1,6 +1,5 @@
 package com.nisoft.instools;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -31,7 +30,6 @@ import com.nisoft.instools.utils.StringsUtil;
 public class MaterialInspectServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static final String PATH = "http://47.93.191.62:8080/recode/JXCZ/原材料检验/";
-	
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -60,11 +58,11 @@ public class MaterialInspectServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String intent = request.getParameter("intent");
 		String type = request.getParameter("type");
-		
+
 		switch (intent) {
 		case "new":
 			String newNum = getNewJobNum(type);
-			if(newNum!=null){
+			if (newNum != null) {
 				MaterialInspectRecode newRecode = new MaterialInspectRecode();
 				newRecode.setJobNum(newNum);
 				newRecode.setType(type);
@@ -80,13 +78,13 @@ public class MaterialInspectServlet extends HttpServlet {
 			String job_id = request.getParameter("job_id");
 			MaterialInspectRecode recode = queryJobWithId(job_id);
 			String imagesDirPath = request.getSession().getServletContext()
-    				.getRealPath("/recode/JXCZ/"+type+"/"+job_id+"/");
+					.getRealPath("/recode/JXCZ/" + type + "/" + job_id + "/");
 			System.out.println(imagesDirPath);
-			recode.setImagesName(getAllImagesName(imagesDirPath));
-			String inspectorId=recode.getInspectorId();
+			recode.setImagesName(FileUtils.getAllImagesName(imagesDirPath));
+			String inspectorId = recode.getInspectorId();
 			Employee employee = JDBCUtil.queryEmployeeWithPhone(inspectorId);
 			RecodeDataPackage dataPackage = new RecodeDataPackage();
-			if(employee!=null){
+			if (employee != null) {
 				dataPackage.setName(employee.getName());
 			}
 			dataPackage.setRecode(recode);
@@ -106,24 +104,24 @@ public class MaterialInspectServlet extends HttpServlet {
 			String jobJson = request.getParameter("job_json");
 			Gson gson1 = new Gson();
 			MaterialInspectRecode jobRecode = gson1.fromJson(jobJson, MaterialInspectRecode.class);
-			String picFolderPath = PATH+jobRecode.getType()+"/"+jobRecode.getJobNum();
+			String picFolderPath = PATH + jobRecode.getType() + "/" + jobRecode.getJobNum();
 			System.out.println(picFolderPath);
 			jobRecode.setPicFolderPath(picFolderPath);
 			int row = update(jobRecode);
-			if (row>0){
+			if (row > 0) {
 				out.write("OK");
-			}else{
+			} else {
 				out.write("上传失败！");
 			}
 			break;
 		case "change_id":
 			String newId = request.getParameter("newId");
 			String oldId = request.getParameter("oldId");
-			String folderPath = PATH+type+"/"+newId;
-			int changedRow = changeJobId(newId,oldId,folderPath);
-			if(changedRow == 1){
+			String folderPath = PATH + type + "/" + newId;
+			int changedRow = changeJobId(newId, oldId, folderPath);
+			if (changedRow == 1) {
 				out.write("OK");
-			}else{
+			} else {
 				out.write("failed");
 			}
 			break;
@@ -131,9 +129,9 @@ public class MaterialInspectServlet extends HttpServlet {
 		out.close();
 	}
 
-	private int changeJobId(String newId,String oldId,String folderPath) {
-		String sql = "update job_material_inspect set job_id = '"+newId+"',folder='"+folderPath
-				+"' where job_id = '"+oldId+"'";
+	private int changeJobId(String newId, String oldId, String folderPath) {
+		String sql = "update job_material_inspect set job_id = '" + newId + "',folder='" + folderPath
+				+ "' where job_id = '" + oldId + "'";
 		System.out.println(sql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
@@ -141,7 +139,7 @@ public class MaterialInspectServlet extends HttpServlet {
 		try {
 			st = conn.createStatement();
 			row = st.executeUpdate(sql);
-			System.out.println("changeJobId:"+row);
+			System.out.println("changeJobId:" + row);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -178,30 +176,30 @@ public class MaterialInspectServlet extends HttpServlet {
 			Date date = new Date();
 			String fomatDate = StringsUtil.dateFormatForNum(date);
 			String[] strsDate = fomatDate.split("-");
-			if(row>0){
+			if (row > 0) {
 				job_id = rs.getString("job_id");
 				strsJobId = job_id.split("-");
 				num = Integer.parseInt(strsJobId[strsJobId.length - 1]) + 1;
 			}
-			
+
 			switch (type) {
 			case "material/metal":
-				if(job_id!=null&&strsDate[0].equals(strsJobId[0])){
+				if (job_id != null && strsDate[0].equals(strsJobId[0])) {
 					number = strsDate[0] + "-" + num;
-				}else {
+				} else {
 					number = strsDate[0] + "-" + 5001;
 				}
-				
+
 				break;
 			case "material/nonmetal":
-				if (job_id!=null&&strsDate[0].equals(strsJobId[0])) {
+				if (job_id != null && strsDate[0].equals(strsJobId[0])) {
 					number = strsDate[0] + "-" + num;
 				} else {
 					number = strsDate[0] + "-" + 1;
 				}
 				break;
 			case "material/purchased_parts":
-				if (job_id!=null&&strsDate[0].equals(strsJobId[0]) && strsDate[1].equals(strsJobId[1])) {
+				if (job_id != null && strsDate[0].equals(strsJobId[0]) && strsDate[1].equals(strsJobId[1])) {
 					number = strsDate[0] + "-" + strsDate[1] + "-" + num;
 				} else {
 					number = strsDate[0] + "-" + strsDate[1] + "-" + 1;
@@ -318,23 +316,23 @@ public class MaterialInspectServlet extends HttpServlet {
 
 	private int update(MaterialInspectRecode recode) {
 		String job_id = recode.getJobNum();
-		if(job_id == null||job_id.equals("")){
+		if (job_id == null || job_id.equals("")) {
 			return -1;
 		}
-//		String job_type = recode.getType();
-//		String folder = recode.getPicFolderPath();
-//		String description = recode.getDescription();
-//		String inspector_id = recode.getInspectorId();
+		// String job_type = recode.getType();
+		// String folder = recode.getPicFolderPath();
+		// String description = recode.getDescription();
+		// String inspector_id = recode.getInspectorId();
 		Date date = recode.getDate();
-		if(date == null){
+		if (date == null) {
 			date = new Date();
 		}
 		long dateTime = date.getTime();
 		long update_time = recode.getLatestUpdateTime();
 		String insertSql = "insert into job_material_inspect"
-				+ "(job_id,job_type,folder,description,inspector_id,date,update_time)values('" + recode.getJobNum() + "','"
-				+ recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
-				+ recode.getInspectorId() + "','" + dateTime+ "','"+update_time
+				+ "(job_id,job_type,folder,description,inspector_id,date,update_time)values('" + recode.getJobNum()
+				+ "','" + recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
+				+ recode.getInspectorId() + "','" + dateTime + "','" + update_time
 				+ "') on duplicate key update job_type = values(job_type),folder=values(folder),"
 				+ "description = values(description),inspector_id = values(inspector_id),"
 				+ "date = values(date),update_time = values(update_time)";
@@ -345,7 +343,7 @@ public class MaterialInspectServlet extends HttpServlet {
 		try {
 			st = conn.createStatement();
 			row = st.executeUpdate(insertSql);
-			System.out.println("update row:"+row);
+			System.out.println("update row:" + row);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -364,20 +362,5 @@ public class MaterialInspectServlet extends HttpServlet {
 		}
 		return row;
 	}
-	
-	private ArrayList<String> getAllImagesName(String imagesDirPath){
-		
-		File dir = new File(imagesDirPath);
-		ArrayList<String> names = new ArrayList<>();
-		if(dir.exists()){
-			String [] filesName = dir.list();
-			for(String name:filesName){
-				String fileType = FileUtils.getFileType(name);
-				if(fileType.equals("jpg")||fileType.equals("bmp")){
-					names.add(name);
-				}
-			}
-		}
-		return names;
-	}
+
 }

@@ -16,16 +16,18 @@ public class FileUtils {
 	}
 
 	public static ArrayList<String> getAllImagesName(String imagesDirPath) {
-
+		System.out.println("getAllImagesName:"+imagesDirPath);
 		File dir = new File(imagesDirPath);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
 		ArrayList<String> names = new ArrayList<>();
-		if (dir.exists()) {
-			String[] filesName = dir.list();
-			for (String name : filesName) {
-				String fileType = FileUtils.getFileType(name);
-				if (fileType.equals("jpg") || fileType.equals("bmp")) {
-					names.add(name);
-				}
+		String[] filesName = dir.list();
+		for (String name : filesName) {
+			System.out.println(name);
+			String fileType = FileUtils.getFileType(name);
+			if (fileType.equals("jpg") || fileType.equals("bmp")||fileType.equals("png")) {
+				names.add(name);
 			}
 		}
 		return names;

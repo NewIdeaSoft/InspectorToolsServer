@@ -15,8 +15,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.connector.Request;
-
 import com.google.gson.Gson;
 import com.nisoft.instools.bean.ImageRecode;
 import com.nisoft.instools.bean.ProblemDataPackage;
@@ -34,6 +32,7 @@ import com.nisoft.instools.utils.StringsUtil;
 @WebServlet("/ProblemRecodeServlet")
 public class ProblemRecodeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private static final String PROBLEM_DATA_PATH = "C:\\apache-tomcat-8.5.15\\webapps\\InspectorToolsServer\\recode\\JXCZ\\problem\\"; 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -66,11 +65,15 @@ public class ProblemRecodeServlet extends HttpServlet {
 		case "new_problem":
 			String newProblemId = getRecodeId();
 			if (newProblemId != null) {
-				String problemImagesDirPath = request.getSession().getServletContext()
-	    				.getRealPath("/recode/JXCZ/problem/"+newProblemId+"/problem/");
-				String resultImagesDirPath = request.getSession().getServletContext()
-	    				.getRealPath("/recode/JXCZ/problem/"+newProblemId+"/result/");
-				ProblemDataPackage data = new ProblemDataPackage(newProblemId,problemImagesDirPath,resultImagesDirPath);
+//				String problemImagesDirPath = request.getSession().getServletContext()
+//						.getRealPath("/recode/JXCZ/problem/" + newProblemId + "/problem/");
+				String problemImagesDirPath = PROBLEM_DATA_PATH+ newProblemId + "\\problem\\";
+				System.out.println(problemImagesDirPath);
+//				String resultImagesDirPath = request.getSession().getServletContext()
+//						.getRealPath("/recode/JXCZ/problem/" + newProblemId + "/result/");
+				String resultImagesDirPath = PROBLEM_DATA_PATH+ newProblemId + "\\result\\";
+				ProblemDataPackage data = new ProblemDataPackage(newProblemId, problemImagesDirPath,
+						resultImagesDirPath);
 				boolean isUpdated = update(data);
 				if (isUpdated) {
 					out.write(newProblemId);
@@ -83,7 +86,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 			break;
 		case "recoding":
 			String problemId = request.getParameter("problem_id");
-			ProblemDataPackage problem = queryProblemById(problemId,request);
+			ProblemDataPackage problem = queryProblemById(problemId);
 			if (problem != null) {
 				Gson gson = new Gson();
 				String recodeResult = gson.toJson(problem);
@@ -108,9 +111,9 @@ public class ProblemRecodeServlet extends HttpServlet {
 			Gson gson = new Gson();
 			ProblemDataPackage problemRecode = gson.fromJson(json, ProblemDataPackage.class);
 			boolean isSuccess = update(problemRecode);
-			if(isSuccess){
+			if (isSuccess) {
 				out.write("OK");
-			}else{
+			} else {
 				out.write("更新数据失败！");
 			}
 			break;
@@ -237,7 +240,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 					+ RecodeTable.Cols.DESCRIPTION_TEXT + "," + RecodeTable.Cols.IMAGES_NAME + ")values('"
 					+ recode.getRecodeId() + "','" + recode.getType() + "','" + recode.getAuthor() + "','" + dateTime
 					+ "','" + update_time + "','" + recode.getDescription() + "','"
-					+ ((ImageRecode) recode).getImagesNameOnserver() + "') on duplicate key update "
+					+ ((ImageRecode) recode).getImagesNameOnServer() + "') on duplicate key update "
 					+ RecodeTable.Cols.TYPE + "= values(" + RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR
 					+ "= values(" + RecodeTable.Cols.AUTHOR + ")," + RecodeTable.Cols.DATE + "= values("
 					+ RecodeTable.Cols.DATE + ")," + RecodeTable.Cols.UPDATE_TIME + "= values("
@@ -251,7 +254,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 					+ RecodeTable.Cols.IMAGES_NAME + "," + RecodeTable.Cols.TITLE + "," + RecodeTable.Cols.ADDRESS
 					+ ")values('" + recode.getRecodeId() + "','" + recode.getType() + "','" + recode.getAuthor() + "','"
 					+ dateTime + "','" + "" + "','" + recode.getUpdateTime() + "','" + recode.getDescription() + "','"
-					+ ((ProblemRecode) recode).getImagesNameOnserver() + "','" + ((ProblemRecode) recode).getTitle()
+					+ ((ProblemRecode) recode).getImagesNameOnServer() + "','" + ((ProblemRecode) recode).getTitle()
 					+ "','" + ((ProblemRecode) recode).getAddress() + "') on duplicate key update "
 					+ RecodeTable.Cols.TYPE + "= values(" + RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR
 					+ "= values(" + RecodeTable.Cols.AUTHOR + ")," + RecodeTable.Cols.DATE + "= values("
@@ -329,11 +332,15 @@ public class ProblemRecodeServlet extends HttpServlet {
 		return null;
 	}
 
-	private ProblemDataPackage queryProblemById(String problemId,HttpServletRequest request) {
-		Recode program = queryRecodeById(RecodeTable.PROGRAM_NAME, problemId,request);
-		ProblemRecode problemRecode = (ProblemRecode) queryRecodeById(RecodeTable.PROBLEM_NAME, problemId,request);
-		Recode analysis = queryRecodeById(RecodeTable.ANALYSIS_NAME, problemId,request);
-		ImageRecode result = (ImageRecode) queryRecodeById(RecodeTable.RESULT_NAME, problemId,request);
+	private ProblemDataPackage queryProblemById(String problemId) {
+		System.out.println(RecodeTable.PROGRAM_NAME);
+		Recode program = queryRecodeById(RecodeTable.PROGRAM_NAME, problemId);
+		System.out.println(RecodeTable.PROBLEM_NAME);
+		ProblemRecode problemRecode = (ProblemRecode) queryRecodeById(RecodeTable.PROBLEM_NAME, problemId);
+		System.out.println(RecodeTable.ANALYSIS_NAME);
+		Recode analysis = queryRecodeById(RecodeTable.ANALYSIS_NAME, problemId);
+		System.out.println(RecodeTable.RESULT_NAME);
+		ImageRecode result = (ImageRecode) queryRecodeById(RecodeTable.RESULT_NAME, problemId);
 		ProblemDataPackage problem = new ProblemDataPackage();
 		problem.setAnalysis(analysis);
 		problem.setProblem(problemRecode);
@@ -342,8 +349,9 @@ public class ProblemRecodeServlet extends HttpServlet {
 		return problem;
 	}
 
-	private Recode queryRecodeById(String table, String problemId,HttpServletRequest request) {
-		String sql = "select * from " + table + " where " + RecodeTable.Cols.PROBLEM_ID + " = " + problemId;
+	private Recode queryRecodeById(String table, String problemId) {
+		String sql = "select * from " + table + " where " + RecodeTable.Cols.PROBLEM_ID + " = '" + problemId+"'";
+		System.out.println("queryRecodeById:"+sql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
@@ -354,7 +362,6 @@ public class ProblemRecodeServlet extends HttpServlet {
 			int row = rs.getRow();
 			if (row > 0) {
 				rs.first();
-
 				String authorId = rs.getString(RecodeTable.Cols.AUTHOR);
 				String description = rs.getString(RecodeTable.Cols.DESCRIPTION_TEXT);
 				String type = rs.getString(RecodeTable.Cols.TYPE);
@@ -364,21 +371,25 @@ public class ProblemRecodeServlet extends HttpServlet {
 				if (table.equals(RecodeTable.ANALYSIS_NAME) || table.equals(RecodeTable.PROBLEM_NAME)) {
 					return new Recode(problemId, type, authorId, date, description, updateTime);
 				} else if (table.equals(RecodeTable.RESULT_NAME)) {
-					String resultImagesDirPath = request.getSession().getServletContext()
-		    				.getRealPath("/recode/JXCZ/problem/"+problemId+"/result/");
+//					String resultImagesDirPath = request.getSession().getServletContext()
+//							.getRealPath("/recode/JXCZ/problem/" + problemId + "/result/");
+					String resultImagesDirPath = PROBLEM_DATA_PATH+ problemId + "\\result\\";
 					ArrayList<String> resultImagesName = FileUtils.getAllImagesName(resultImagesDirPath);
-					return new ImageRecode(problemId, type, authorId, date, description, updateTime,resultImagesName);
+					return new ImageRecode(problemId, type, authorId, date, description, updateTime, resultImagesName);
 				} else if (table.equals(RecodeTable.PROBLEM_NAME)) {
-					String problemImagesDirPath = request.getSession().getServletContext()
-		    				.getRealPath("/recode/JXCZ/problem/"+problemId+"/problem/");
+					System.out.println(RecodeTable.PROBLEM_NAME);
+//					String problemImagesDirPath = request.getSession().getServletContext()
+//							.getRealPath("/recode/JXCZ/problem/" + problemId + "/problem/");
+					String problemImagesDirPath = PROBLEM_DATA_PATH+ problemId + "\\problem\\";
 					System.out.println(problemImagesDirPath);
 					ArrayList<String> problemImagesName = FileUtils.getAllImagesName(problemImagesDirPath);
+					System.out.println("problemImagesName:"+problemImagesName.toString());
 					String address = rs.getString(RecodeTable.Cols.ADDRESS);
 					String suspectsString = rs.getString(RecodeTable.Cols.SUSPECTS);
 					ArrayList<String> suspects = StringsUtil.getStrings(suspectsString);
 					String title = rs.getString(RecodeTable.Cols.TITLE);
-					return new ProblemRecode(problemId, type, authorId, date, description, updateTime,problemImagesName, address,
-							suspects, title);
+					return new ProblemRecode(problemId, type, authorId, date, description, updateTime,
+							problemImagesName, address, suspects, title);
 				}
 			}
 		} catch (SQLException e) {
