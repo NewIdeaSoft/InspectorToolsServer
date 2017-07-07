@@ -18,8 +18,8 @@ public class ProblemRecode extends ImageRecode {
         super(recodeId);
     }
     
-    public ProblemRecode(String recodeId, String type, String author, Date date, String description, long updateTime,String adress,ArrayList<String> suspects,String title) {
-		super(recodeId, type, author, date, description, updateTime);
+    public ProblemRecode(String recodeId, String type, String author, Date date, String description, long updateTime,ArrayList<String> imagesName,String adress,ArrayList<String> suspects,String title) {
+		super(recodeId, type, author, date, description, updateTime,imagesName);
 		mAddress = adress;
 		mSuspects = suspects;
 		mTitle = title;

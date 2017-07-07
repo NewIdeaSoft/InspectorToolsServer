@@ -13,8 +13,9 @@ public class ImageRecode extends Recode {
     public ImageRecode() {
     }
     
-    public ImageRecode(String recodeId, String type, String author, Date date, String description, long updateTime) {
+    public ImageRecode(String recodeId, String type, String author, Date date, String description, long updateTime,ArrayList<String> imagesName) {
 		super(recodeId, type, author, date, description, updateTime);
+		mImagesNameOnserver = imagesName;
 	}
 
 	public ImageRecode(String recodeId) {
