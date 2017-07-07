@@ -15,7 +15,7 @@ public class RecodeDbSchema {
             public static final String DATE = "date";
             public static final String AUTHOR = "author";
             public static final String DESCRIPTION_TEXT ="description";
-            public static final String FOLDER_PATH = "folder";
+            public static final String IMAGES_NAME = "images_name";
             public static final String UPDATE_TIME = "update_time";
             public static final String TYPE = "type";
             public static final String SUSPECTS = "suspects";

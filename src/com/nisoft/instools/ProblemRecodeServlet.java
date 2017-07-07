@@ -23,6 +23,7 @@ import com.nisoft.instools.bean.Recode;
 import com.nisoft.instools.gson.ProblemListDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
 import com.nisoft.instools.strings.RecodeDbSchema.RecodeTable;
+import com.nisoft.instools.utils.FileUtils;
 import com.nisoft.instools.utils.StringsUtil;
 
 /**
@@ -31,7 +32,6 @@ import com.nisoft.instools.utils.StringsUtil;
 @WebServlet("/ProblemRecodeServlet")
 public class ProblemRecodeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -78,7 +78,17 @@ public class ProblemRecodeServlet extends HttpServlet {
 		case "recoding":
 			String problemId = request.getParameter("problem_id");
 			ProblemDataPackage problem = queryProblemById(problemId);
+			String problemImagesDirPath = request.getSession().getServletContext()
+    				.getRealPath("/recode/JXCZ/problem/"+problemId+"/problem/");
+			String resultImagesDirPath = request.getSession().getServletContext()
+    				.getRealPath("/recode/JXCZ/problem/"+problemId+"/result/");
 			if (problem != null) {
+				ProblemRecode recode = problem.getProblem();
+				recode.setImagesNameOnserver(FileUtils.getAllImagesName(problemImagesDirPath));
+				problem.setProblem(recode);
+				ImageRecode recode1 = problem.getResultRecode();
+				recode1.setImagesNameOnserver(FileUtils.getAllImagesName(resultImagesDirPath));
+				problem.setResultRecode(recode1);
 				Gson gson = new Gson();
 				String recodeResult = gson.toJson(problem);
 				out.write(recodeResult);
@@ -228,31 +238,31 @@ public class ProblemRecodeServlet extends HttpServlet {
 		} else if (table.equals(RecodeTable.RESULT_NAME)) {
 			sql = "insert into " + table + "(" + RecodeTable.Cols.PROBLEM_ID + "," + RecodeTable.Cols.TYPE + ","
 					+ RecodeTable.Cols.AUTHOR + "," + RecodeTable.Cols.DATE + "," + RecodeTable.Cols.UPDATE_TIME + ","
-					+ RecodeTable.Cols.DESCRIPTION_TEXT + "," + RecodeTable.Cols.FOLDER_PATH + ")values('"
+					+ RecodeTable.Cols.DESCRIPTION_TEXT + "," + RecodeTable.Cols.IMAGES_NAME + ")values('"
 					+ recode.getRecodeId() + "','" + recode.getType() + "','" + recode.getAuthor() + "','" + dateTime
 					+ "','" + update_time + "','" + recode.getDescription() + "','"
-					+ ((ImageRecode) recode).getImagesFolderPath() + "') on duplicate key update "
+					+ ((ImageRecode) recode).getImagesNameOnserver() + "') on duplicate key update "
 					+ RecodeTable.Cols.TYPE + "= values(" + RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR
 					+ "= values(" + RecodeTable.Cols.AUTHOR + ")," + RecodeTable.Cols.DATE + "= values("
 					+ RecodeTable.Cols.DATE + ")," + RecodeTable.Cols.UPDATE_TIME + "= values("
 					+ RecodeTable.Cols.UPDATE_TIME + ")," + RecodeTable.Cols.DESCRIPTION_TEXT + "= values("
-					+ RecodeTable.Cols.DESCRIPTION_TEXT + ")," + RecodeTable.Cols.FOLDER_PATH + "= values("
-					+ RecodeTable.Cols.FOLDER_PATH + ")";
+					+ RecodeTable.Cols.DESCRIPTION_TEXT + ")," + RecodeTable.Cols.IMAGES_NAME + "= values("
+					+ RecodeTable.Cols.IMAGES_NAME + ")";
 		} else if (table.equals(RecodeTable.PROBLEM_NAME)) {
 			sql = "insert into " + table + "(" + RecodeTable.Cols.PROBLEM_ID + "," + RecodeTable.Cols.TYPE + ","
 					+ RecodeTable.Cols.AUTHOR + "," + RecodeTable.Cols.DATE + "," + RecodeTable.Cols.SUSPECTS + ","
 					+ RecodeTable.Cols.UPDATE_TIME + "," + RecodeTable.Cols.DESCRIPTION_TEXT + ","
-					+ RecodeTable.Cols.FOLDER_PATH + "," + RecodeTable.Cols.TITLE + "," + RecodeTable.Cols.ADDRESS
+					+ RecodeTable.Cols.IMAGES_NAME + "," + RecodeTable.Cols.TITLE + "," + RecodeTable.Cols.ADDRESS
 					+ ")values('" + recode.getRecodeId() + "','" + recode.getType() + "','" + recode.getAuthor() + "','"
 					+ dateTime + "','" + "" + "','" + recode.getUpdateTime() + "','" + recode.getDescription() + "','"
-					+ ((ProblemRecode) recode).getImagesFolderPath() + "','" + ((ProblemRecode) recode).getTitle()
+					+ ((ProblemRecode) recode).getImagesNameOnserver() + "','" + ((ProblemRecode) recode).getTitle()
 					+ "','" + ((ProblemRecode) recode).getAddress() + "') on duplicate key update "
 					+ RecodeTable.Cols.TYPE + "= values(" + RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR
 					+ "= values(" + RecodeTable.Cols.AUTHOR + ")," + RecodeTable.Cols.DATE + "= values("
 					+ RecodeTable.Cols.DATE + ")," + RecodeTable.Cols.SUSPECTS + "= values(" + RecodeTable.Cols.SUSPECTS
 					+ ")," + RecodeTable.Cols.UPDATE_TIME + "= values(" + RecodeTable.Cols.UPDATE_TIME + "),"
 					+ RecodeTable.Cols.DESCRIPTION_TEXT + "= values(" + RecodeTable.Cols.DESCRIPTION_TEXT + "),"
-					+ RecodeTable.Cols.FOLDER_PATH + "= values(" + RecodeTable.Cols.FOLDER_PATH + "),"
+					+ RecodeTable.Cols.IMAGES_NAME + "= values(" + RecodeTable.Cols.IMAGES_NAME + "),"
 					+ RecodeTable.Cols.TITLE + "= values(" + RecodeTable.Cols.TITLE + ")," + RecodeTable.Cols.ADDRESS
 					+ "= values(" + RecodeTable.Cols.ADDRESS + ")";
 		}
@@ -279,6 +289,8 @@ public class ProblemRecodeServlet extends HttpServlet {
 					String address = rs.getString(RecodeTable.Cols.ADDRESS);
 					String suspectsString = rs.getString(RecodeTable.Cols.SUSPECTS);
 					ArrayList<String> suspects = StringsUtil.getStrings(suspectsString);
+					String imagesString = rs.getString(RecodeTable.Cols.IMAGES_NAME);
+					ArrayList<String> images_name = StringsUtil.getStrings(imagesString);
 					String title = rs.getString(RecodeTable.Cols.TITLE);
 					String type = rs.getString(RecodeTable.Cols.TYPE);
 					long dateTime = rs.getLong(RecodeTable.Cols.DATE);
@@ -293,6 +305,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 					recode.setType(type);
 					recode.setUpdateTime(updateTime);
 					recode.setSuspects(suspects);
+					recode.setImagesNameOnserver(images_name);
 					allRecodes.add(recode);
 				}
 				return allRecodes;

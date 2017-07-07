@@ -1,5 +1,6 @@
 package com.nisoft.instools.bean;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Date;
  */
 
 public class ImageRecode extends Recode {
-    private String mImagesFolderPath;
+    private ArrayList<String> mImagesNameOnserver;
 
     public ImageRecode() {
     }
@@ -20,11 +21,13 @@ public class ImageRecode extends Recode {
         super(recodeId);
     }
 
-    public String getImagesFolderPath() {
-        return mImagesFolderPath;
-    }
+	public ArrayList<String> getImagesNameOnserver() {
+		return mImagesNameOnserver;
+	}
 
-    public void setImagesFolderPath(String imagesFolderPath) {
-        mImagesFolderPath = imagesFolderPath;
-    }
+	public void setImagesNameOnserver(ArrayList<String> imagesNameOnserver) {
+		mImagesNameOnserver = imagesNameOnserver;
+	}
+
+    
 }
