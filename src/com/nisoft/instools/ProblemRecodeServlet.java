@@ -360,6 +360,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 			rs = st.executeQuery(sql);
 			rs.last();
 			int row = rs.getRow();
+			System.out.println(table+":"+row);
 			if (row > 0) {
 				rs.first();
 				String authorId = rs.getString(RecodeTable.Cols.AUTHOR);
@@ -368,7 +369,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 				long dateTime = rs.getLong(RecodeTable.Cols.DATE);
 				long updateTime = rs.getLong(RecodeTable.Cols.UPDATE_TIME);
 				Date date = new Date(dateTime);
-				if (table.equals(RecodeTable.ANALYSIS_NAME) || table.equals(RecodeTable.PROBLEM_NAME)) {
+				if (table.equals(RecodeTable.ANALYSIS_NAME) || table.equals(RecodeTable.PROGRAM_NAME)) {
 					return new Recode(problemId, type, authorId, date, description, updateTime);
 				} else if (table.equals(RecodeTable.RESULT_NAME)) {
 //					String resultImagesDirPath = request.getSession().getServletContext()
