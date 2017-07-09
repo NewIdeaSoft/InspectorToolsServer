@@ -185,7 +185,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 		try {
 			st = conn.createStatement();
 			row = st.executeUpdate(updateSql);
-			System.out.println("update row:" + row);
+			System.out.println(table+" update row:" + row);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -210,7 +210,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 		int b = update(RecodeTable.ANALYSIS_NAME, data.getAnalysis());
 		int c = update(RecodeTable.PROGRAM_NAME, data.getProgram());
 		int d = update(RecodeTable.RESULT_NAME, data.getResultRecode());
-		if (a > 0 && b > 0 && c > 0 && d > 0) {
+		if (a >=0 && b >= 0 && c >= 0 && d >= 0) {
 			return true;
 		}
 		return false;

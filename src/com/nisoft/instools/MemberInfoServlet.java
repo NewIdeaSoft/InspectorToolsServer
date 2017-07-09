@@ -18,6 +18,7 @@ import com.nisoft.instools.bean.Company;
 import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.bean.OrgInfo;
 import com.nisoft.instools.gson.EmployeeDataPackage;
+import com.nisoft.instools.gson.EmployeeListPackage;
 import com.nisoft.instools.gson.OrgListPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
 import com.nisoft.instools.utils.StringsUtil;
@@ -174,9 +175,73 @@ public class MemberInfoServlet extends HttpServlet {
 			}else{
 				out.write("error!");
 			}
+		}else if(intent.equals("employees")){
+			ArrayList<Employee> employees = queryAllEmployees();
+			if(employees.size()>0){
+				EmployeeListPackage listPackage = new EmployeeListPackage();
+				listPackage.setEmployees(employees);
+				Gson gson = new Gson();
+				out.write(gson.toJson(listPackage));
+			}else{
+				out.write("zero");
+			}
 		}
 		out.close();
 
+	}
+	private ArrayList<Employee> queryAllEmployees(){
+		ArrayList<Employee> employees = new ArrayList<>();
+		String sql = "select * from employee";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st =null;
+		ResultSet rs =null;
+		try {
+			st =conn.createStatement();
+			rs = st.executeQuery(sql);
+			rs.last();
+			int row = rs.getRow();
+			if(row>0){
+				rs.beforeFirst();
+				while(rs.next()){
+					Employee employee = new Employee();
+					String phone = rs.getString("phone");
+					String name = rs.getString("name");
+					String org_id = rs.getString("org_code");
+					String work_num = rs.getString("work_num");
+					String strings = rs.getString("stations_code");
+					String companyId = rs.getString("company_id");
+					if (strings != null) {
+						ArrayList<String> stations_id = StringsUtil.getStrings(strings);
+						employee.setPositionsId(stations_id);
+					}
+					employee.setWorkNum(work_num);
+					employee.setPhone(phone);
+					employee.setName(name);
+					employee.setOrgId(org_id);
+					employee.setCompanyId(companyId);
+					employees.add(employee);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return employees;
 	}
 
 	private String getCompanyId(String phone) {
