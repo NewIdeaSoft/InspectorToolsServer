@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nisoft.instools.bean.ImageRecode;
 import com.nisoft.instools.bean.ProblemDataPackage;
 import com.nisoft.instools.bean.ProblemRecode;
@@ -88,7 +89,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 			String problemId = request.getParameter("problem_id");
 			ProblemDataPackage problem = queryProblemById(problemId);
 			if (problem != null) {
-				Gson gson = new Gson();
+				Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm").create();
 				String recodeResult = gson.toJson(problem);
 				out.write(recodeResult);
 			} else {
@@ -102,13 +103,13 @@ public class ProblemRecodeServlet extends HttpServlet {
 			} else {
 				ProblemListDataPackage data = new ProblemListDataPackage();
 				data.setProblemRecodes(allRecodes);
-				Gson gson = new Gson();
+				Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm").create();
 				out.write(gson.toJson(data));
 			}
 			break;
 		case "update":
 			String json = request.getParameter("job_json");
-			Gson gson = new Gson();
+			Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm").create();
 			ProblemDataPackage problemRecode = gson.fromJson(json, ProblemDataPackage.class);
 			boolean isSuccess = update(problemRecode);
 			if (isSuccess) {
