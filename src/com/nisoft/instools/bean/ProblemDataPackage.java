@@ -1,6 +1,7 @@
 package com.nisoft.instools.bean;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import com.nisoft.instools.utils.FileUtils;
 
@@ -25,12 +26,17 @@ public class ProblemDataPackage {
     }
 
     public ProblemDataPackage(String problemId, String problemImagesDirPath, String resultImagesDirPath){
+    	Date date = new Date();
         mProblem = new ProblemRecode(problemId);
+        mProblem.setDate(date);
         ArrayList<String> problemImagesName = FileUtils.getAllImagesName(problemImagesDirPath);
         mProblem.setImagesNameOnserver(problemImagesName);
         mAnalysis = new Recode(problemId);
+        mAnalysis.setDate(date);
         mProgram = new Recode(problemId);
+        mProgram.setDate(date);
         mResultRecode = new ImageRecode(problemId);
+        mResultRecode.setDate(date);
         ArrayList<String> resultImagesName = FileUtils.getAllImagesName(resultImagesDirPath);
         mResultRecode.setImagesNameOnserver(resultImagesName);
     }
