@@ -21,6 +21,7 @@ import com.nisoft.instools.gson.EmployeeDataPackage;
 import com.nisoft.instools.gson.EmployeeListPackage;
 import com.nisoft.instools.gson.OrgListPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
+import com.nisoft.instools.utils.GsonUtil;
 import com.nisoft.instools.utils.StringsUtil;
 
 /**
@@ -87,7 +88,7 @@ public class MemberInfoServlet extends HttpServlet {
 				dataPackage.setEmployee(employee);
 				dataPackage.setOrgInfo(detailedOrgs);
 				dataPackage.setOrgsInfoForSelect(orgsInfoForchoose);
-				Gson gson = new Gson();
+				Gson gson = GsonUtil.getDateFormatGson();
 				String json = gson.toJson(dataPackage);
 				System.out.println(json);
 				out.write(json);
@@ -106,7 +107,7 @@ public class MemberInfoServlet extends HttpServlet {
 				st = conn.createStatement();
 				String json = request.getParameter("employee");
 				System.out.println(json);
-				Gson gson = new Gson();
+				Gson gson = GsonUtil.getDateFormatGson();
 				Employee employee = gson.fromJson(json, Employee.class);
 				String name = employee.getName();
 				String employee_id = employee.getWorkNum();
@@ -157,7 +158,7 @@ public class MemberInfoServlet extends HttpServlet {
 			ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(parent_id);
 			OrgListPackage package1 = new OrgListPackage();
 			package1.setOrgInfos(childOrgs);
-			Gson gson = new Gson();
+			Gson gson = GsonUtil.getDateFormatGson();
 			String json = gson.toJson(package1);
 			out.write(json);
 		} else if (intent.equals("query_company")) {
@@ -176,11 +177,23 @@ public class MemberInfoServlet extends HttpServlet {
 				out.write("error!");
 			}
 		}else if(intent.equals("employees")){
-			ArrayList<Employee> employees = queryAllEmployees();
+			String companyId = request.getParameter("company_id");
+			ArrayList<Employee> employees = queryAllEmployees(companyId);
 			if(employees.size()>0){
 				EmployeeListPackage listPackage = new EmployeeListPackage();
 				listPackage.setEmployees(employees);
-				Gson gson = new Gson();
+				Gson gson = GsonUtil.getDateFormatGson();
+				out.write(gson.toJson(listPackage));
+			}else{
+				out.write("zero");
+			}
+		}else if(intent.equals("orgs")){
+			String companyId = request.getParameter("company_id");
+			ArrayList<OrgInfo> orgs = queryAllOrgs(companyId);
+			if(orgs.size()>0){
+				OrgListPackage listPackage = new OrgListPackage();
+				listPackage.setOrgInfos(orgs);
+				Gson gson = GsonUtil.getDateFormatGson();
 				out.write(gson.toJson(listPackage));
 			}else{
 				out.write("zero");
@@ -189,9 +202,9 @@ public class MemberInfoServlet extends HttpServlet {
 		out.close();
 
 	}
-	private ArrayList<Employee> queryAllEmployees(){
+	private ArrayList<Employee> queryAllEmployees(String companyId){
 		ArrayList<Employee> employees = new ArrayList<>();
-		String sql = "select * from employee";
+		String sql = "select * from employee where company_id = '"+companyId+"'";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st =null;
 		ResultSet rs =null;
@@ -209,7 +222,6 @@ public class MemberInfoServlet extends HttpServlet {
 					String org_id = rs.getString("org_code");
 					String work_num = rs.getString("work_num");
 					String strings = rs.getString("stations_code");
-					String companyId = rs.getString("company_id");
 					if (strings != null) {
 						ArrayList<String> stations_id = StringsUtil.getStrings(strings);
 						employee.setPositionsId(stations_id);
@@ -243,7 +255,55 @@ public class MemberInfoServlet extends HttpServlet {
 		}
 		return employees;
 	}
-
+	private ArrayList<OrgInfo> queryAllOrgs(String companyId){
+		ArrayList<OrgInfo> orgs = new ArrayList<>();
+		String sql = "select * from org where company_id = '"+companyId+"'";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st =null;
+		ResultSet rs =null;
+		try {
+			st =conn.createStatement();
+			rs = st.executeQuery(sql);
+			rs.last();
+			int row = rs.getRow();
+			if(row>0){
+				rs.beforeFirst();
+				while(rs.next()){
+					OrgInfo org = new OrgInfo();
+					String org_id = rs.getString("org_id");
+					String org_name = rs.getString("name");
+					String parent_id = rs.getString("parent_id");
+					int org_level = rs.getInt("level");
+					
+					org.setOrgId(org_id);;
+					org.setOrgName(org_name);;
+					org.setParentOrgId(parent_id);
+					org.setOrgLevel(org_level);
+					org.setCompanyId(companyId);
+					orgs.add(org);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return orgs;
+	}
 	private String getCompanyId(String phone) {
 		String sql = "select *from user where phone = '" + phone + "'";
 		Connection conn = JDBCUtil.getConnection();

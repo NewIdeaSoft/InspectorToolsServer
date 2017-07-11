@@ -21,6 +21,7 @@ import com.nisoft.instools.bean.MaterialInspectRecode;
 import com.nisoft.instools.gson.RecodeDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
 import com.nisoft.instools.utils.FileUtils;
+import com.nisoft.instools.utils.GsonUtil;
 import com.nisoft.instools.utils.StringsUtil;
 
 /**
@@ -88,7 +89,7 @@ public class MaterialInspectServlet extends HttpServlet {
 				dataPackage.setName(employee.getName());
 			}
 			dataPackage.setRecode(recode);
-			Gson gson = new Gson();
+			Gson gson = GsonUtil.getDateFormatGson();
 			out.write(gson.toJson(dataPackage));
 			break;
 		case "jub_num":
@@ -102,7 +103,7 @@ public class MaterialInspectServlet extends HttpServlet {
 			break;
 		case "upload":
 			String jobJson = request.getParameter("job_json");
-			Gson gson1 = new Gson();
+			Gson gson1 = GsonUtil.getDateFormatGson();
 			MaterialInspectRecode jobRecode = gson1.fromJson(jobJson, MaterialInspectRecode.class);
 			String picFolderPath = PATH + jobRecode.getType() + "/" + jobRecode.getJobNum();
 			System.out.println(picFolderPath);

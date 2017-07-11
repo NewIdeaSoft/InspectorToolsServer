@@ -18,6 +18,7 @@ import com.nisoft.instools.bean.Company;
 import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.gson.RegisterDataPackage;
 import com.nisoft.instools.jdbc.JDBCUtil;
+import com.nisoft.instools.utils.GsonUtil;
 import com.nisoft.instools.utils.StringsUtil;
 
 //@WebServlet("/LoginServlet")
@@ -60,7 +61,7 @@ public class LoginServlet extends HttpServlet {
 			System.out.println(allCompanies.size());
 			RegisterDataPackage datapackage = new RegisterDataPackage();
 			datapackage.setCompanies(allCompanies);
-			Gson gson = new Gson();
+			Gson gson = GsonUtil.getDateFormatGson();
 			out.write(gson.toJson(datapackage));
 
 		} catch (Exception e) {
@@ -116,7 +117,7 @@ public class LoginServlet extends HttpServlet {
 					if (resultPassword.equals(password)) {
 						Employee employee = JDBCUtil.queryEmployeeWithPhone(userName);
 						if (employee != null) {
-							Gson gson = new Gson();
+							Gson gson = GsonUtil.getDateFormatGson();
 							String json = gson.toJson(employee);
 							out.write(json);
 						} else {
