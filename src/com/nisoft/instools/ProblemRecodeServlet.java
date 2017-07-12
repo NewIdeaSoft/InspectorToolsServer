@@ -289,8 +289,8 @@ public class ProblemRecodeServlet extends HttpServlet {
 					String address = rs.getString(RecodeTable.Cols.ADDRESS);
 					String suspectsString = rs.getString(RecodeTable.Cols.SUSPECTS);
 					ArrayList<String> suspects = StringsUtil.getStrings(suspectsString);
-					String imagesString = rs.getString(RecodeTable.Cols.IMAGES_NAME);
-					ArrayList<String> images_name = StringsUtil.getStrings(imagesString);
+					String problemImagesDirPath = PROBLEM_DATA_PATH+ problemId + "\\problem\\";
+					ArrayList<String> images_name = FileUtils.getAllImagesName(problemImagesDirPath);
 					String title = rs.getString(RecodeTable.Cols.TITLE);
 					String type = rs.getString(RecodeTable.Cols.TYPE);
 					long dateTime = rs.getLong(RecodeTable.Cols.DATE);
