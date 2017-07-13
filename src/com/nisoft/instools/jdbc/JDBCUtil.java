@@ -141,15 +141,17 @@ public class JDBCUtil {
 				String work_num = rs.getString("work_num");
 				String strings = rs.getString("stations_code");
 				String companyId = rs.getString("company_id");
+				String positionId = rs.getString("position_id");
 				if (strings != null) {
 					ArrayList<String> stations_id = StringsUtil.getStrings(strings);
-					employee.setPositionsId(stations_id);
+					employee.setStationsId(stations_id);
 				}
 				employee.setWorkNum(work_num);
 				employee.setPhone(phone);
 				employee.setName(name);
 				employee.setOrgId(org_id);
 				employee.setCompanyId(companyId);
+				employee.setPositionId(positionId);
 				return employee;
 			}
 		} catch (SQLException e) {

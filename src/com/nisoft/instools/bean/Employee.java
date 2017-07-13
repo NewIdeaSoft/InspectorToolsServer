@@ -8,7 +8,8 @@ public class Employee {
 	private String mWorkNum;
 	private String mOrgId;
 	private String mCompanyId;
-	private ArrayList<String> mPositionsId;
+	private ArrayList<String> mStationsId;
+	private String mPositionId;
 	public String getName() {
 		return mName;
 	}
@@ -33,11 +34,11 @@ public class Employee {
 	public void setOrgId(String orgId) {
 		mOrgId = orgId;
 	}
-	public ArrayList<String> getPositionsId() {
-		return mPositionsId;
+	public ArrayList<String> getStationsId() {
+		return mStationsId;
 	}
-	public void setPositionsId(ArrayList<String> positionsId) {
-		mPositionsId = positionsId;
+	public void setStationsId(ArrayList<String> stationsId) {
+		mStationsId = stationsId;
 	}
 	public String getCompanyId() {
 		return mCompanyId;
@@ -45,5 +46,10 @@ public class Employee {
 	public void setCompanyId(String companyId) {
 		mCompanyId = companyId;
 	}
-	
+	public String getPositionId() {
+		return mPositionId;
+	}
+	public void setPositionId(String positionId) {
+		mPositionId = positionId;
+	}
 }

@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.nisoft.instools.bean.Company;
 import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.bean.OrgInfo;
+import com.nisoft.instools.bean.PositionInfo;
 import com.nisoft.instools.gson.EmployeeDataPackage;
 import com.nisoft.instools.gson.EmployeeListPackage;
 import com.nisoft.instools.gson.OrgListPackage;
@@ -113,8 +114,8 @@ public class MemberInfoServlet extends HttpServlet {
 				String employee_id = employee.getWorkNum();
 				String org_id = employee.getOrgId();
 				String stations_code = "";
-				if (employee.getPositionsId() != null) {
-					stations_code = employee.getPositionsId().toString();
+				if (employee.getStationsId() != null) {
+					stations_code = employee.getStationsId().toString();
 				}
 				String companyId = employee.getCompanyId();
 				System.out.println("stations_code" + stations_code);
@@ -179,29 +180,81 @@ public class MemberInfoServlet extends HttpServlet {
 		}else if(intent.equals("employees")){
 			String companyId = request.getParameter("company_id");
 			ArrayList<Employee> employees = queryAllEmployees(companyId);
-			if(employees.size()>0){
+			ArrayList<OrgInfo> orgList = queryAllOrgs(companyId);
+			ArrayList<PositionInfo> positionList = queryAllPositions(companyId);
+			if(employees.size()>0||orgList.size()>0||positionList.size()>0){
 				EmployeeListPackage listPackage = new EmployeeListPackage();
 				listPackage.setEmployees(employees);
-				Gson gson = GsonUtil.getDateFormatGson();
-				out.write(gson.toJson(listPackage));
-			}else{
-				out.write("zero");
-			}
-		}else if(intent.equals("orgs")){
-			String companyId = request.getParameter("company_id");
-			ArrayList<OrgInfo> orgs = queryAllOrgs(companyId);
-			if(orgs.size()>0){
-				OrgListPackage listPackage = new OrgListPackage();
-				listPackage.setOrgInfos(orgs);
+				listPackage.setOrgList(orgList);
+				listPackage.setPositionList(positionList);
 				Gson gson = GsonUtil.getDateFormatGson();
 				out.write(gson.toJson(listPackage));
 			}else{
 				out.write("zero");
 			}
 		}
+//		else if(intent.equals("orgs")){
+//			String companyId = request.getParameter("company_id");
+//			ArrayList<OrgInfo> orgs = queryAllOrgs(companyId);
+//			if(orgs.size()>0){
+//				OrgListPackage listPackage = new OrgListPackage();
+//				listPackage.setOrgInfos(orgs);
+//				Gson gson = GsonUtil.getDateFormatGson();
+//				out.write(gson.toJson(listPackage));
+//			}else{
+//				out.write("zero");
+//			}
+//		}
 		out.close();
 
 	}
+	private ArrayList<PositionInfo> queryAllPositions(String companyId) {
+		ArrayList<PositionInfo> positionList = new ArrayList<>();
+		String sql = "select * from position where company_code = '"+companyId+"'";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st =null;
+		ResultSet rs =null;
+		try {
+			st =conn.createStatement();
+			rs = st.executeQuery(sql);
+			rs.last();
+			int row = rs.getRow();
+			if(row>0){
+				rs.beforeFirst();
+				while(rs.next()){
+					PositionInfo positionInfo = new PositionInfo();
+					String positionId = rs.getString("position_id");
+					String name = rs.getString("position_name");
+					int manageLevel = rs.getInt("manage_level");
+					positionInfo.setPositionId(positionId);
+					positionInfo.setPositionName(name);
+					positionInfo.setManageLevel(manageLevel);
+					positionInfo.setCompanyId(companyId);
+					positionList.add(positionInfo);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return positionList;
+	}
+
 	private ArrayList<Employee> queryAllEmployees(String companyId){
 		ArrayList<Employee> employees = new ArrayList<>();
 		String sql = "select * from employee where company_id = '"+companyId+"'";
@@ -224,14 +277,17 @@ public class MemberInfoServlet extends HttpServlet {
 					String strings = rs.getString("stations_code");
 					if (strings != null) {
 						ArrayList<String> stations_id = StringsUtil.getStrings(strings);
-						employee.setPositionsId(stations_id);
+						employee.setStationsId(stations_id);
 					}
+					String positionId = rs.getString("position_id");
 					employee.setWorkNum(work_num);
 					employee.setPhone(phone);
 					employee.setName(name);
 					employee.setOrgId(org_id);
 					employee.setCompanyId(companyId);
+					employee.setPositionId(positionId);
 					employees.add(employee);
+					
 				}
 			}
 		} catch (SQLException e) {
