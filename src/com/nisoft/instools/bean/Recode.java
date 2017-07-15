@@ -29,6 +29,11 @@ public class Recode {
 
 	public Recode(String recodeId) {
         mRecodeId = recodeId;
+        mType = "";
+        mAuthor = "";
+        mDate = new Date();
+        mDescription = "";
+        mUpdateTime = mDate.getTime();
     }
 
     public String getRecodeId() {

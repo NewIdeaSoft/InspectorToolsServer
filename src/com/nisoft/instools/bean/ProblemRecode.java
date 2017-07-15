@@ -16,6 +16,8 @@ public class ProblemRecode extends ImageRecode {
     }
     public ProblemRecode(String recodeId) {
         super(recodeId);
+        mAddress = "";
+        mTitle = "";
     }
     
     public ProblemRecode(String recodeId, String type, String author, Date date, String description, long updateTime,ArrayList<String> imagesName,String adress,ArrayList<String> suspects,String title) {
