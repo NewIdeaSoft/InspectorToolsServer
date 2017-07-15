@@ -67,6 +67,9 @@ public class MaterialInspectServlet extends HttpServlet {
 				MaterialInspectRecode newRecode = new MaterialInspectRecode();
 				newRecode.setJobNum(newNum);
 				newRecode.setType(type);
+				newRecode.setDescription("");
+				newRecode.setDate(new Date());
+				newRecode.setLatestUpdateTime(new Date().getTime());
 				update(newRecode);
 			}
 			out.write(newNum);
