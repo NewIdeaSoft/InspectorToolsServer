@@ -5,6 +5,9 @@ import com.google.gson.GsonBuilder;
 
 public class GsonUtil {
 	public static Gson getDateFormatGson(){
-		return new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm").create();
+		return new GsonBuilder()
+				.registerTypeAdapterFactory(new NullStringToEmptyAdapterFactory<>())
+				.setDateFormat("yyyy-MM-dd HH:mm")
+				.create();
 	}
 }
