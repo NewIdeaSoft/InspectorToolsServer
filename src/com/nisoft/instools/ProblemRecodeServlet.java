@@ -67,6 +67,8 @@ public class ProblemRecodeServlet extends HttpServlet {
 		switch (intent) {
 		case "new_problem":
 			String newProblemId = getRecodeId();
+			System.out.println("newProblemId:"+newProblemId);
+			String authorId = request.getParameter("author_id");
 			if (newProblemId != null) {
 				// String problemImagesDirPath =
 				// request.getSession().getServletContext()
@@ -81,12 +83,17 @@ public class ProblemRecodeServlet extends HttpServlet {
 				String resultImagesDirPath = PROBLEM_DATA_PATH + newProblemId + "\\result\\";
 				ProblemDataPackage data = new ProblemDataPackage(newProblemId, problemImagesDirPath,
 						resultImagesDirPath);
-				boolean isUpdated = update(data);
-				if (isUpdated) {
-					out.write(newProblemId);
-				} else {
-					out.write(newProblemId);
-				}
+				data.getProblem().setAuthor(authorId);
+//				boolean isUpdated = 
+						update(data);
+				Gson gson = GsonUtil.getDateFormatGson();
+				String dataString = gson.toJson(data);
+				out.write(dataString);
+//				if (isUpdated) {
+//					out.write(newProblemId);
+//				} else {
+//					out.write(newProblemId);
+//				}
 			} else {
 				out.write("false");
 			}
@@ -137,7 +144,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 	}
 
 	private String getRecodeId() {
-		String sql = "select *from problem order by problem_id";
+		String sql = "select *from problem order by id";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
@@ -154,7 +161,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 				String lastId = rs.getString("problem_id");
 				String[] strs = lastId.split("-");
 				String[] dateStrs = dateFormat.split("-");
-				if (strs[0].equals(dateStrs[0]) || strs[1].equals(dateStrs[1])) {
+				if (strs[0].equals(dateStrs[0]) && strs[1].equals(dateStrs[1])) {
 					int num = Integer.parseInt(strs[strs.length - 1]) + 1;
 					return dateFormat + "-" + num;
 				} else {

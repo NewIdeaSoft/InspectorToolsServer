@@ -165,7 +165,7 @@ public class MaterialInspectServlet extends HttpServlet {
 
 	private String getNewJobNum(String type) {
 		String number = null;
-		String sql = "select * from job_material_inspect where job_type = '" + type + "' order by job_id";
+		String sql = "select * from job_material_inspect where job_type = '" + type + "' order by job_id_int";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
@@ -320,6 +320,7 @@ public class MaterialInspectServlet extends HttpServlet {
 
 	private int update(MaterialInspectRecode recode) {
 		String job_id = recode.getJobNum();
+		int newNumInt = Integer.parseInt(job_id.replaceAll("-", ""));
 		if (job_id == null || job_id.equals("")) {
 			return -1;
 		}
@@ -334,8 +335,8 @@ public class MaterialInspectServlet extends HttpServlet {
 		long dateTime = date.getTime();
 		long update_time = recode.getLatestUpdateTime();
 		String insertSql = "insert into job_material_inspect"
-				+ "(job_id,job_type,folder,description,inspector_id,date,update_time)values('" + recode.getJobNum()
-				+ "','" + recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
+				+ "(job_id,job_id_int,job_type,folder,description,inspector_id,date,update_time)values('" + recode.getJobNum()
+				+ "',"+newNumInt+",'" + recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
 				+ recode.getInspectorId() + "','" + dateTime + "','" + update_time
 				+ "') on duplicate key update job_type = values(job_type),folder=values(folder),"
 				+ "description = values(description),inspector_id = values(inspector_id),"
