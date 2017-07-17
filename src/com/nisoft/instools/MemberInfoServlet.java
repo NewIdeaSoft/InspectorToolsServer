@@ -67,7 +67,6 @@ public class MemberInfoServlet extends HttpServlet {
 			try {
 				EmployeeDataPackage dataPackage = new EmployeeDataPackage();
 				ArrayList<OrgInfo> detailedOrgs = new ArrayList<>();
-
 				ArrayList<OrgInfo> childOrgs = JDBCUtil.queryChildOrgs(company_id);
 				ArrayList<ArrayList<OrgInfo>> orgsInfoForchoose = new ArrayList<>();
 				Employee employee = JDBCUtil.queryEmployeeWithPhone(phone);
@@ -96,7 +95,6 @@ public class MemberInfoServlet extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 				out.write("false");
-
 			}
 		} else if (intent.equals("update")) {
 			System.out.println("开始更新！");
@@ -179,14 +177,17 @@ public class MemberInfoServlet extends HttpServlet {
 			}
 		}else if(intent.equals("employees")){
 			String companyId = request.getParameter("company_id");
+			System.out.println(companyId);
 			ArrayList<Employee> employees = queryAllEmployees(companyId);
 			ArrayList<OrgInfo> orgList = queryAllOrgs(companyId);
 			ArrayList<PositionInfo> positionList = queryAllPositions(companyId);
-			if(employees.size()>0||orgList.size()>0||positionList.size()>0){
+			Company company = queryCompanyWithId(companyId);
+			if(employees.size()>0||orgList.size()>0||positionList.size()>0||company!=null){
 				EmployeeListPackage listPackage = new EmployeeListPackage();
 				listPackage.setEmployees(employees);
 				listPackage.setOrgList(orgList);
 				listPackage.setPositionList(positionList);
+				listPackage.setCompany(company);
 				Gson gson = GsonUtil.getDateFormatGson();
 				out.write(gson.toJson(listPackage));
 			}else{

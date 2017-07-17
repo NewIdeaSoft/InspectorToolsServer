@@ -2,6 +2,7 @@ package com.nisoft.instools.gson;
 
 import java.util.ArrayList;
 
+import com.nisoft.instools.bean.Company;
 import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.bean.OrgInfo;
 
@@ -9,7 +10,6 @@ public class EmployeeDataPackage {
 	private Employee mEmployee;
     private ArrayList<OrgInfo> mOrgInfo;
     private ArrayList<ArrayList<OrgInfo>> mOrgsInfoForSelect;
-
     public Employee getEmployee() {
         return mEmployee;
     }

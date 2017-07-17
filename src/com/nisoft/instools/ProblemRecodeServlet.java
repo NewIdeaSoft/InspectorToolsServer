@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
+import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.bean.ImageRecode;
 import com.nisoft.instools.bean.ProblemDataPackage;
 import com.nisoft.instools.bean.ProblemRecode;
@@ -33,7 +34,7 @@ import com.nisoft.instools.utils.StringsUtil;
 @WebServlet("/ProblemRecodeServlet")
 public class ProblemRecodeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static final String PROBLEM_DATA_PATH = "C:\\apache-tomcat-8.5.15\\webapps\\InspectorToolsServer\\recode\\JXCZ\\problem\\";
+	private static final String PROBLEM_DATA_PATH = "C:\\apache-tomcat-8.5.15\\webapps\\job-recode\\recode\\";
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -64,28 +65,30 @@ public class ProblemRecodeServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String intent = request.getParameter("intent");
 		String problemId = request.getParameter("problem_id");
+		String companyId = request.getParameter("company_id");
 		switch (intent) {
 		case "new_problem":
 			String newProblemId = getRecodeId();
 			System.out.println("newProblemId:"+newProblemId);
 			String authorId = request.getParameter("author_id");
+			
 			if (newProblemId != null) {
 				// String problemImagesDirPath =
 				// request.getSession().getServletContext()
 				// .getRealPath("/recode/JXCZ/problem/" + newProblemId +
 				// "/problem/");
-				String problemImagesDirPath = PROBLEM_DATA_PATH + newProblemId + "\\problem\\";
+				String problemImagesDirPath = PROBLEM_DATA_PATH +"\\"+companyId+"\\problem\\"+ newProblemId + "\\problem\\";
 				System.out.println(problemImagesDirPath);
 				// String resultImagesDirPath =
 				// request.getSession().getServletContext()
 				// .getRealPath("/recode/JXCZ/problem/" + newProblemId +
 				// "/result/");
-				String resultImagesDirPath = PROBLEM_DATA_PATH + newProblemId + "\\result\\";
+				String resultImagesDirPath = PROBLEM_DATA_PATH +"\\"+companyId+"\\problem\\"+ newProblemId + "\\result\\";
 				ProblemDataPackage data = new ProblemDataPackage(newProblemId, problemImagesDirPath,
 						resultImagesDirPath);
 				data.getProblem().setAuthor(authorId);
 //				boolean isUpdated = 
-						update(data);
+						update(data,companyId);
 				Gson gson = GsonUtil.getDateFormatGson();
 				String dataString = gson.toJson(data);
 				out.write(dataString);
@@ -109,7 +112,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 			}
 			break;
 		case "list":
-			ArrayList<ProblemRecode> allRecodes = queryAll();
+			ArrayList<ProblemRecode> allRecodes = queryAll(companyId);
 			if (allRecodes == null || allRecodes.size() == 0) {
 				out.write("zero");
 			} else {
@@ -123,7 +126,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 			String json = request.getParameter("job_json");
 			Gson gson = GsonUtil.getDateFormatGson();
 			ProblemDataPackage problemRecode = gson.fromJson(json, ProblemDataPackage.class);
-			boolean isSuccess = update(problemRecode);
+			boolean isSuccess = update(problemRecode,companyId);
 			if (isSuccess) {
 				out.write("OK");
 			} else {
@@ -190,7 +193,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 		return null;
 	}
 
-	private int update(String table, Recode recode) {
+	private int update(String table, Recode recode,String companyId) {
 		String job_id = recode.getRecodeId();
 		if (job_id == null || job_id.equals("")) {
 			return -1;
@@ -199,7 +202,7 @@ public class ProblemRecodeServlet extends HttpServlet {
 		if (date == null) {
 			date = new Date();
 		}
-		String updateSql = updateSql(table, recode);
+		String updateSql = updateSql(table, recode,companyId);
 		System.out.println(updateSql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
@@ -227,18 +230,18 @@ public class ProblemRecodeServlet extends HttpServlet {
 		return row;
 	}
 
-	private boolean update(ProblemDataPackage data) {
-		int a = update(RecodeTable.PROBLEM_NAME, data.getProblem());
-		int b = update(RecodeTable.ANALYSIS_NAME, data.getAnalysis());
-		int c = update(RecodeTable.PROGRAM_NAME, data.getProgram());
-		int d = update(RecodeTable.RESULT_NAME, data.getResultRecode());
+	private boolean update(ProblemDataPackage data,String companyId) {
+		int a = update(RecodeTable.PROBLEM_NAME, data.getProblem(),companyId);
+		int b = update(RecodeTable.ANALYSIS_NAME, data.getAnalysis(),companyId);
+		int c = update(RecodeTable.PROGRAM_NAME, data.getProgram(),companyId);
+		int d = update(RecodeTable.RESULT_NAME, data.getResultRecode(),companyId);
 		if (a >= 0 && b >= 0 && c >= 0 && d >= 0) {
 			return true;
 		}
 		return false;
 	}
 
-	private String updateSql(String table, Recode recode) {
+	private String updateSql(String table, Recode recode,String companyId) {
 		String sql = null;
 		Date date = recode.getDate();
 		if (date == null) {
@@ -273,11 +276,12 @@ public class ProblemRecodeServlet extends HttpServlet {
 			sql = "insert into " + table + "(" + RecodeTable.Cols.PROBLEM_ID + "," + RecodeTable.Cols.TYPE + ","
 					+ RecodeTable.Cols.AUTHOR + "," + RecodeTable.Cols.DATE + "," + RecodeTable.Cols.SUSPECTS + ","
 					+ RecodeTable.Cols.UPDATE_TIME + "," + RecodeTable.Cols.DESCRIPTION_TEXT + ","
-					+ RecodeTable.Cols.IMAGES_NAME + "," + RecodeTable.Cols.TITLE + "," + RecodeTable.Cols.ADDRESS+ "," + "operation"
+					+ RecodeTable.Cols.IMAGES_NAME + "," + RecodeTable.Cols.TITLE + "," + RecodeTable.Cols.ADDRESS+ "," 
+					+ "operation,company_id" 
 					+ ")values('" + recode.getRecodeId() + "','" + recode.getType() + "','" + recode.getAuthor() + "','"
 					+ dateTime + "','" + "" + "','" + recode.getUpdateTime() + "','" + recode.getDescription() + "','"
 					+ ((ProblemRecode) recode).getImagesNameOnServer() + "','" + ((ProblemRecode) recode).getTitle()
-					+ "','" + ((ProblemRecode) recode).getAddress() + "','create') on duplicate key update "
+					+ "','" + ((ProblemRecode) recode).getAddress() + "','create','"+companyId+"') on duplicate key update "
 					+ RecodeTable.Cols.TYPE + "= values(" + RecodeTable.Cols.TYPE + ")," + RecodeTable.Cols.AUTHOR
 					+ "= values(" + RecodeTable.Cols.AUTHOR + ")," + RecodeTable.Cols.DATE + "= values("
 					+ RecodeTable.Cols.DATE + ")," + RecodeTable.Cols.SUSPECTS + "= values(" + RecodeTable.Cols.SUSPECTS
@@ -285,13 +289,13 @@ public class ProblemRecodeServlet extends HttpServlet {
 					+ RecodeTable.Cols.DESCRIPTION_TEXT + "= values(" + RecodeTable.Cols.DESCRIPTION_TEXT + "),"
 					+ RecodeTable.Cols.IMAGES_NAME + "= values(" + RecodeTable.Cols.IMAGES_NAME + "),"
 					+ RecodeTable.Cols.TITLE + "= values(" + RecodeTable.Cols.TITLE + ")," + RecodeTable.Cols.ADDRESS
-					+ "= values(" + RecodeTable.Cols.ADDRESS + "),operation = 'update'";
+					+ "= values(" + RecodeTable.Cols.ADDRESS + "),operation = 'update',company_id = values(company_id)";
 		}
 		return sql;
 	}
 
-	private ArrayList<ProblemRecode> queryAll() {
-		String sql = "select * from problem where operation != 'delete'";
+	private ArrayList<ProblemRecode> queryAll(String companyId) {
+		String sql = "select * from problem where operation != 'delete' and company_id = '"+companyId+"'";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;

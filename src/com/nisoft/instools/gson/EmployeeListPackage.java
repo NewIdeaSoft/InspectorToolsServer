@@ -2,6 +2,7 @@ package com.nisoft.instools.gson;
 
 import java.util.ArrayList;
 
+import com.nisoft.instools.bean.Company;
 import com.nisoft.instools.bean.Employee;
 import com.nisoft.instools.bean.OrgInfo;
 import com.nisoft.instools.bean.PositionInfo;
@@ -10,6 +11,7 @@ public class EmployeeListPackage {
 	private ArrayList<Employee> mEmployees;
 	private ArrayList<OrgInfo> mOrgList;
 	private ArrayList<PositionInfo> mPositionList;
+	private Company mCompany;
 	public ArrayList<Employee> getEmployees() {
 		return mEmployees;
 	}
@@ -32,6 +34,14 @@ public class EmployeeListPackage {
 
 	public void setPositionList(ArrayList<PositionInfo> positionList) {
 		mPositionList = positionList;
+	}
+
+	public Company getCompany() {
+		return mCompany;
+	}
+
+	public void setCompany(Company company) {
+		mCompany = company;
 	}
 	
 }
