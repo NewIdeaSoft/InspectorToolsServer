@@ -30,7 +30,7 @@ import com.nisoft.instools.utils.StringsUtil;
 @WebServlet("/MaterialInspectServlet")
 public class MaterialInspectServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	public static final String PATH = "http://47.93.191.62:8080/recode/JXCZ/原材料检验/";
+	public static final String PATH = "http://47.93.191.62:80/recode/JXCZ/原材料检验/";
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -59,7 +59,7 @@ public class MaterialInspectServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String intent = request.getParameter("intent");
 		String type = request.getParameter("type");
-
+		String company_id = request.getParameter("company_id");
 		switch (intent) {
 		case "new":
 			String newNum = getNewJobNum(type);
@@ -70,19 +70,19 @@ public class MaterialInspectServlet extends HttpServlet {
 				newRecode.setDescription("");
 				newRecode.setDate(new Date());
 				newRecode.setLatestUpdateTime(new Date().getTime());
-				update(newRecode);
+				update(newRecode,company_id);
 			}
 			out.write(newNum);
 			break;
 		case "query":
-			ArrayList<String> joblist = queryAll(type);
+			ArrayList<String> joblist = queryAll(type,company_id);
 			out.write(joblist.toString());
 			break;
 		case "recoding":
 			String job_id = request.getParameter("job_id");
 			MaterialInspectRecode recode = queryJobWithId(job_id);
 			String imagesDirPath = request.getSession().getServletContext()
-					.getRealPath("/recode/JXCZ/" + type + "/" + job_id + "/");
+					.getRealPath("/recode/"+company_id+"/" + type + "/" + job_id + "/");
 			System.out.println(imagesDirPath);
 			recode.setImagesName(FileUtils.getAllImagesName(imagesDirPath));
 			String inspectorId = recode.getInspectorId();
@@ -111,7 +111,7 @@ public class MaterialInspectServlet extends HttpServlet {
 			String picFolderPath = PATH + jobRecode.getType() + "/" + jobRecode.getJobNum();
 			System.out.println(picFolderPath);
 			jobRecode.setPicFolderPath(picFolderPath);
-			int row = update(jobRecode);
+			int row = update(jobRecode,company_id);
 			if (row > 0) {
 				out.write("OK");
 			} else {
@@ -236,9 +236,9 @@ public class MaterialInspectServlet extends HttpServlet {
 		return number;
 	}
 
-	private ArrayList<String> queryAll(String type) {
+	private ArrayList<String> queryAll(String type,String companyId) {
 		ArrayList<String> allJobs = null;
-		String sql = "select * from job_material_inspect where job_type = '" + type + "' order by job_id";
+		String sql = "select * from job_material_inspect where job_type = '" + type + "' and company_id = '"+companyId+"' order by job_id";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
@@ -318,12 +318,13 @@ public class MaterialInspectServlet extends HttpServlet {
 		return job;
 	}
 
-	private int update(MaterialInspectRecode recode) {
+	private int update(MaterialInspectRecode recode,String companyId) {
 		String job_id = recode.getJobNum();
-		int newNumInt = Integer.parseInt(job_id.replaceAll("-", ""));
+		
 		if (job_id == null || job_id.equals("")) {
 			return -1;
 		}
+		int newNumInt = Integer.parseInt(job_id.replaceAll("-", ""));
 		// String job_type = recode.getType();
 		// String folder = recode.getPicFolderPath();
 		// String description = recode.getDescription();
@@ -335,12 +336,12 @@ public class MaterialInspectServlet extends HttpServlet {
 		long dateTime = date.getTime();
 		long update_time = recode.getLatestUpdateTime();
 		String insertSql = "insert into job_material_inspect"
-				+ "(job_id,job_id_int,job_type,folder,description,inspector_id,date,update_time)values('" + recode.getJobNum()
+				+ "(job_id,job_id_int,job_type,folder,description,inspector_id,date,update_time,company_id)values('" + recode.getJobNum()
 				+ "',"+newNumInt+",'" + recode.getType() + "','" + recode.getPicFolderPath() + "','" + recode.getDescription() + "','"
-				+ recode.getInspectorId() + "','" + dateTime + "','" + update_time
+				+ recode.getInspectorId() + "','" + dateTime + "','" + update_time+ "','" + companyId
 				+ "') on duplicate key update job_type = values(job_type),folder=values(folder),"
 				+ "description = values(description),inspector_id = values(inspector_id),"
-				+ "date = values(date),update_time = values(update_time)";
+				+ "date = values(date),update_time = values(update_time),company_id = values(company_id)";
 		System.out.println(insertSql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
