@@ -131,14 +131,20 @@ public class LoginServlet extends HttpServlet {
 				}
 
 			} else if (type.equals("register")) {
-				String insertSql = "insert into user (phone,password,companyId)values('" + userName + "','" + password
-						+ "','" + companyCode + "')";
-				int i = st.executeUpdate(insertSql);
-				System.out.println("增加了 " + i + " 名新用户！");
-				if (i == 1) {
-					out.write("true");
+
+				int row = queryNewUser(userName, companyCode);
+				if (row <= 0) {
+					out.write("注册失败：尚未加入该公司，请与该公司管理员联系！");
 				} else {
-					out.write("注册失败！");
+					String insertSql = "insert into user (phone,password,companyId)values('" + userName + "','"
+							+ password + "','" + companyCode + "')";
+					int i = st.executeUpdate(insertSql);
+					System.out.println("增加了 " + i + " 名新用户！");
+					if (i == 1) {
+						out.write("true");
+					} else {
+						out.write("注册失败：用户已存在！");
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -160,5 +166,40 @@ public class LoginServlet extends HttpServlet {
 			}
 			out.close();
 		}
+	}
+
+	private int queryNewUser(String phone, String companyId) {
+		String querySql = "select * from employee where phone = '" + phone + "' and company_id = '" + companyId + "'";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		ResultSet rs = null;
+		int row = 0;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(querySql);
+			rs.last();
+			row = rs.getRow();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return row;
+
 	}
 }
