@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import javax.security.auth.message.callback.PrivateKeyCallback.Request;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -146,6 +147,14 @@ public class LoginServlet extends HttpServlet {
 						out.write("注册失败：用户已存在！");
 					}
 				}
+			} else if (type.equals("new_company")) {
+				String json = req.getParameter("company");
+				Gson gson = GsonUtil.getDateFormatGson();
+				Company company = gson.fromJson(json, Company.class);
+				int rows = updateCompany(company);
+				if(rows>0){
+					out.write("OK");
+				}
 			}
 		} catch (Exception e) {
 			out.write("error:3");
@@ -166,6 +175,33 @@ public class LoginServlet extends HttpServlet {
 			}
 			out.close();
 		}
+	}
+
+	private int updateCompany(Company company) {
+		String sql = "insert into company (companyId,company_name,structure) values('" + company.getOrgCode() + "','"
+				+ company.getOrgName() + "','" + company.getOrgStructure().toString() + "'"
+				+ ") on duplicate key update company_name = values(company_name),structure = values(structure)";
+		Connection conn = JDBCUtil.getConnection();
+		Statement st = null;
+		try {
+			st = conn.createStatement();
+			return st.executeUpdate(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally{
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return 0;
 	}
 
 	private int queryNewUser(String phone, String companyId) {
