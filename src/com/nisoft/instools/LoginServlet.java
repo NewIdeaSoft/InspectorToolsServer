@@ -170,6 +170,7 @@ public class LoginServlet extends HttpServlet {
 
 	private int queryNewUser(String phone, String companyId) {
 		String querySql = "select * from employee where phone = '" + phone + "' and company_id = '" + companyId + "'";
+		System.out.println(querySql);
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		ResultSet rs = null;
