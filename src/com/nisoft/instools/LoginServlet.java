@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import javax.security.auth.message.callback.PrivateKeyCallback.Request;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -151,8 +150,8 @@ public class LoginServlet extends HttpServlet {
 				String json = req.getParameter("company");
 				Gson gson = GsonUtil.getDateFormatGson();
 				Company company = gson.fromJson(json, Company.class);
-				int rows = updateCompany(company);
-				if(rows>0){
+				boolean updateSuccess = updateCompany(company);
+				if(updateSuccess){
 					out.write("OK");
 				}
 			}
@@ -177,15 +176,20 @@ public class LoginServlet extends HttpServlet {
 		}
 	}
 
-	private int updateCompany(Company company) {
-		String sql = "insert into company (companyId,company_name,structure) values('" + company.getOrgCode() + "','"
+	private boolean updateCompany(Company company) {
+		String sqlCompany = "insert into company (companyId,company_name,structure) values('" + company.getOrgCode() + "','"
 				+ company.getOrgName() + "','" + company.getOrgStructure().toString() + "'"
 				+ ") on duplicate key update company_name = values(company_name),structure = values(structure)";
+		String sqlOrg = "insert into org (org_id,name,parent_id,level,company_id) values('" + company.getOrgCode() + "','"
+				+ company.getOrgName() + "','NONE',0,'" +company.getOrgCode()+  "'"
+				+ ") on duplicate key update name = values(name),parent_id = values(parent_id),level = values(level),company_id = values(company_id)";
 		Connection conn = JDBCUtil.getConnection();
 		Statement st = null;
 		try {
 			st = conn.createStatement();
-			return st.executeUpdate(sql);
+			int rowOrg = st.executeUpdate(sqlOrg);
+			int rowCompany = st.executeUpdate(sqlCompany);
+			return rowOrg>0&&rowCompany>0;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
@@ -201,7 +205,7 @@ public class LoginServlet extends HttpServlet {
 			}
 		}
 		
-		return 0;
+		return false;
 	}
 
 	private int queryNewUser(String phone, String companyId) {
